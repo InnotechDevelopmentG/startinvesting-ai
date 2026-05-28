@@ -85,7 +85,7 @@ export default function StepRisk({ state: _state, onUpdate, onNext }: StepRiskPr
                       </span>
                     </div>
                     <p className="text-[13px] text-[#00C896] font-medium mt-0.5">{card.desc}</p>
-                    <p className="text-[12px] text-[#888] mt-1 leading-relaxed">{card.detail}</p>
+                    <p className="lg:hidden text-[12px] text-[#888] mt-1 leading-relaxed">{card.detail}</p>
                   </div>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors
