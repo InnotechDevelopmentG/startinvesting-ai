@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { SimulatorState, Frequency, FREQUENCY_LABELS } from '@/types/simulator';
 
 interface StepFrequencyProps {
@@ -16,11 +17,13 @@ const FREQ_SUBLABELS: Record<Frequency, string> = {
   monthly: '12 contributions / year',
 };
 
-export default function StepFrequency({ state, onUpdate, onNext }: StepFrequencyProps) {
+export default function StepFrequency({ state: _state, onUpdate, onNext }: StepFrequencyProps) {
+  const [selected, setSelected] = useState<Frequency | null>(null);
+
   function handleSelect(freq: Frequency) {
+    setSelected(freq);
     onUpdate({ frequency: freq });
-    // auto-advance after brief delay for visual feedback
-    setTimeout(onNext, 120);
+    setTimeout(onNext, 150);
   }
 
   return (
@@ -33,13 +36,13 @@ export default function StepFrequency({ state, onUpdate, onNext }: StepFrequency
           How often will you contribute?
         </h2>
         <p className="mt-2 text-[15px] text-[#888]">
-          Pick what matches your pay schedule.
+          Pick what is realistic for you to contribute.
         </p>
       </div>
 
       <div className="flex flex-col gap-3">
         {frequencies.map((freq) => {
-          const isSelected = state.frequency === freq;
+          const isSelected = selected === freq;
           return (
             <button
               key={freq}

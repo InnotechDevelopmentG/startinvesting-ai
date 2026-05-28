@@ -29,7 +29,21 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "mcp__Claude_in_Chrome__read_page",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Read(//private/tmp/**)",
+      "Bash(ls ~/Desktop/*.png)",
+      "Bash(dig startinvesting.ai A +short)",
+      "Bash(dig www.startinvesting.ai CNAME +short)",
+      "Bash(dig startinvesting.ai NS +short)",
+      "Bash(curl -s -o /dev/null -w %{http_code} --max-time 10 https://startinvesting.ai)",
+      "Bash(nslookup startinvesting.ai)",
+      "Bash(host startinvesting.ai)",
+      "Bash(host www.startinvesting.ai)",
+      "Bash(dig @8.8.8.8 startinvesting.ai A +short)",
+      "Bash(dig @8.8.8.8 www.startinvesting.ai A +short)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} — SSL: %{ssl_verify_result}\" --max-time 15 https://startinvesting.ai)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" --max-time 15 http://startinvesting.ai)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" --max-time 15 --resolve \"startinvesting.ai:443:76.76.21.21\" https://startinvesting.ai)"
     ]
   }
 }

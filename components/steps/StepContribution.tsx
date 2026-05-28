@@ -11,11 +11,12 @@ interface StepContributionProps {
 
 export default function StepContribution({ state, onUpdate, onNext }: StepContributionProps) {
   const [inputVal, setInputVal] = useState<string>(
-    state.contributionAmount > 0 ? String(state.contributionAmount) : ''
+    state.contributionAmount > 0 ? state.contributionAmount.toLocaleString() : ''
   );
   const [error, setError] = useState<string>('');
 
-  const parsed = parseFloat(inputVal.replace(/,/g, ''));
+  const rawNum = parseInt(inputVal.replace(/,/g, ''), 10);
+  const parsed = isNaN(rawNum) ? NaN : rawNum;
   const isValid = !isNaN(parsed) && parsed > 0;
 
   const annualTotal = isValid
@@ -23,10 +24,11 @@ export default function StepContribution({ state, onUpdate, onNext }: StepContri
     : null;
 
   function handleChange(val: string) {
-    const cleaned = val.replace(/[^0-9.]/g, '');
-    setInputVal(cleaned);
+    const digits = val.replace(/[^0-9]/g, '');
+    const formatted = digits ? parseInt(digits, 10).toLocaleString() : '';
+    setInputVal(formatted);
     setError('');
-    const n = parseFloat(cleaned);
+    const n = parseInt(digits, 10);
     if (!isNaN(n) && n > 0) {
       onUpdate({ contributionAmount: n });
     }
@@ -51,10 +53,10 @@ export default function StepContribution({ state, onUpdate, onNext }: StepContri
           Step 4 of 6
         </p>
         <h2 className="text-[28px] font-medium text-[#111] leading-tight tracking-tight">
-          How much per {FREQUENCY_LABELS[state.frequency].toLowerCase().replace('bi-weekly', 'two weeks')}?
+          How much will you invest every {FREQUENCY_LABELS[state.frequency].toLowerCase().replace('bi-weekly', 'two weeks')}?
         </h2>
         <p className="mt-2 text-[15px] text-[#888]">
-          Even small amounts compound significantly over time.
+          Even small amounts grow significantly over time.
         </p>
       </div>
 

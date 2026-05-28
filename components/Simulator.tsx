@@ -118,13 +118,17 @@ export default function Simulator() {
                 <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
                   <polyline points="0,11 4,6 8,8 15,1" stroke="#00C896" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
                 </svg>
-                <span
-                  ref={mobileValueRef}
-                  className="font-tabular text-[14px] font-medium text-[#111]"
-                  style={{ letterSpacing: '-0.02em' }}
-                >
-                  {formatCurrencyFull(state.projectedValue)}
-                </span>
+                {state.projectedValue > 0 ? (
+                  <span
+                    ref={mobileValueRef}
+                    className="font-tabular text-[14px] font-medium text-[#111]"
+                    style={{ letterSpacing: '-0.02em' }}
+                  >
+                    {formatCurrencyFull(state.projectedValue)}
+                  </span>
+                ) : (
+                  <span className="text-[13px] text-[#aaa]">your projection</span>
+                )}
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
                   <path d="M1 1l4 4 4-4" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>

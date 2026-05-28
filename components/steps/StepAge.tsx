@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, KeyboardEvent } from 'react';
 import { SimulatorState } from '@/types/simulator';
 
 interface StepAgeProps {
@@ -10,33 +9,13 @@ interface StepAgeProps {
 }
 
 export default function StepAge({ state, onUpdate, onNext }: StepAgeProps) {
-  const [inputVal, setInputVal] = useState<string>(state.age > 0 ? String(state.age) : '');
-  const [error, setError] = useState<string>('');
+  const age = state.age;
+  const yearsToRetirement = Math.max(65 - age, 1);
+  const pct = ((age - 16) / (75 - 16)) * 100;
 
-  const parsed = parseInt(inputVal, 10);
-  const isValid = !isNaN(parsed) && parsed >= 16 && parsed <= 75;
-  const yearsToRetirement = isValid ? Math.max(65 - parsed, 1) : null;
-
-  function handleChange(val: string) {
-    setInputVal(val);
-    setError('');
-    const n = parseInt(val, 10);
-    if (!isNaN(n) && n >= 16 && n <= 75) {
-      const yrs = Math.max(65 - n, 1);
-      onUpdate({ age: n, years: yrs });
-    }
-  }
-
-  function handleContinue() {
-    if (!isValid) {
-      setError('Please enter an age between 16 and 75.');
-      return;
-    }
-    onNext();
-  }
-
-  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter' && isValid) handleContinue();
+  function handleChange(val: number) {
+    const yrs = Math.max(65 - val, 1);
+    onUpdate({ age: val, years: yrs });
   }
 
   return (
@@ -49,42 +28,53 @@ export default function StepAge({ state, onUpdate, onNext }: StepAgeProps) {
           How old are you?
         </h2>
         <p className="mt-2 text-[15px] text-[#888]">
-          We'll calculate your years until retirement at 65.
+          We'll calculate your path to retirement at 65.
         </p>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="relative">
+      <div className="flex flex-col gap-6">
+        <div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-[48px] font-medium tracking-tight text-[#111] font-tabular">
+              {age}
+            </span>
+            <span className="text-[20px] text-[#888]">years old</span>
+          </div>
+          <p className="text-[15px] text-[#888] mt-1">
+            {yearsToRetirement} years until retirement
+          </p>
+        </div>
+
+        <div className="relative py-2">
+          <div
+            className="absolute top-1/2 -translate-y-1/2 left-0 h-1 rounded-full bg-[#00C896] pointer-events-none"
+            style={{ width: `${pct}%` }}
+          />
           <input
-            type="number"
+            type="range"
             min={16}
             max={75}
-            value={inputVal}
-            onChange={(e) => handleChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="e.g. 28"
-            autoFocus
-            className="w-full text-[32px] font-medium tracking-tight text-[#111] border-b-2 border-[#e5e7eb] focus:border-[#00C896] outline-none bg-transparent pb-3 transition-colors duration-200 placeholder:text-[#d1d5db]"
+            step={1}
+            value={age}
+            onChange={(e) => handleChange(parseInt(e.target.value, 10))}
+            aria-label={`Age: ${age}`}
+            aria-valuemin={16}
+            aria-valuemax={75}
+            aria-valuenow={age}
+            className="w-full relative z-10"
           />
         </div>
 
-        {error && (
-          <p className="text-sm text-red-500">{error}</p>
-        )}
-
-        {isValid && yearsToRetirement !== null && (
-          <p className="text-[14px] text-[#888] mt-1">
-            That's <span className="text-[#111] font-medium">{yearsToRetirement} years</span> until retirement.
-          </p>
-        )}
+        <div className="flex justify-between text-[12px] text-[#bbb] font-medium">
+          <span>16</span>
+          <span>75</span>
+        </div>
       </div>
 
       <button
-        onClick={handleContinue}
-        disabled={!isValid}
+        onClick={onNext}
         className="w-full py-4 rounded-xl text-[15px] font-medium transition-all duration-200
-          bg-[#00C896] text-white disabled:bg-[#e5e7eb] disabled:text-[#aaa] disabled:cursor-not-allowed
-          hover:enabled:bg-[#00b386] active:enabled:scale-[0.98]"
+          bg-[#00C896] text-white hover:bg-[#00b386] active:scale-[0.98]"
       >
         Continue
       </button>

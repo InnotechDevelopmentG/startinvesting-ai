@@ -49,6 +49,8 @@ export default function MobileResultsView({
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const emailInputRef = useRef<HTMLInputElement>(null);
+  const touchStartY = useRef(0);
+  const [sheetDragY, setSheetDragY] = useState(0);
 
   const retirementAge = state.age > 0 ? Math.max(state.age + state.years, 65) : 65;
   const projectedFormatted = formatCurrencyFull(state.projectedValue);
@@ -85,6 +87,22 @@ export default function MobileResultsView({
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' && valid) handleSubmit();
+  }
+
+  function handleSheetTouchStart(e: React.TouchEvent) {
+    touchStartY.current = e.touches[0].clientY;
+  }
+
+  function handleSheetTouchMove(e: React.TouchEvent) {
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0) setSheetDragY(delta);
+  }
+
+  function handleSheetTouchEnd() {
+    if (sheetDragY > 100) {
+      setSheetOpen(false);
+    }
+    setSheetDragY(0);
   }
 
   return (
@@ -134,7 +152,13 @@ export default function MobileResultsView({
           >
             {projectedFormatted}
           </span>
-          <p className="text-[15px] text-[#888] mb-6">by age {retirementAge}</p>
+          <p className="text-[15px] text-[#888] mb-2">by age {retirementAge}</p>
+          <p className="text-[12px] text-[#bbb] mb-6 flex items-center gap-1">
+            scroll to see your full breakdown
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="animate-bounce">
+              <path d="M5 1v8M2 6l3 3 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </p>
 
           {/* Chart */}
           <div className="mb-6">
@@ -188,13 +212,13 @@ export default function MobileResultsView({
           onClick={() => setSheetOpen(true)}
           className="w-full py-4 rounded-xl text-[15px] font-medium bg-[#00C896] text-white hover:bg-[#00b386] transition-colors active:scale-[0.98]"
         >
-          Get my free investing plan
+          Show me how to get there →
         </button>
         <button
           onClick={onNext}
           className="w-full py-2.5 text-[13px] text-[#aaa] hover:text-[#666] transition-colors mt-1"
         >
-          Skip — just show me brokers
+          Skip, show me brokers
         </button>
       </div>
 
@@ -210,7 +234,14 @@ export default function MobileResultsView({
           {/* Sheet */}
           <div
             className="relative bg-white rounded-t-2xl animate-slide-up px-6 pt-4"
-            style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom))' }}
+            style={{
+              paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
+              transform: `translateY(${sheetDragY}px)`,
+              transition: sheetDragY > 0 ? 'none' : 'transform 0.3s ease',
+            }}
+            onTouchStart={handleSheetTouchStart}
+            onTouchMove={handleSheetTouchMove}
+            onTouchEnd={handleSheetTouchEnd}
           >
             {/* Handle */}
             <div className="w-10 h-1 bg-[#e5e7eb] rounded-full mx-auto mb-5" />
@@ -266,14 +297,14 @@ export default function MobileResultsView({
                     bg-[#00C896] text-white disabled:bg-[#e5e7eb] disabled:text-[#aaa] disabled:cursor-not-allowed
                     hover:enabled:bg-[#00b386] active:enabled:scale-[0.98]"
                 >
-                  {loading ? 'Sending…' : 'Get my free investing plan'}
+                  {loading ? 'Sending…' : 'Send me the plan →'}
                 </button>
 
                 <button
                   onClick={() => { setSheetOpen(false); onNext(); }}
                   className="w-full py-2.5 text-[13px] text-[#aaa] hover:text-[#666] transition-colors"
                 >
-                  Skip — just show me brokers
+                  Skip, show me brokers
                 </button>
               </div>
             )}

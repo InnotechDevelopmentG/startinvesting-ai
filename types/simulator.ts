@@ -26,8 +26,8 @@ export const FREQUENCY_PER_YEAR: Record<Frequency, number> = {
 
 export const RISK_RATES: Record<RiskProfile, number> = {
   conservative: 0.05,
-  moderate: 0.07,
-  growth: 0.10,
+  moderate: 0.08,
+  growth: 0.12,
 };
 
 export const RISK_LABELS: Record<RiskProfile, string> = {
@@ -37,19 +37,19 @@ export const RISK_LABELS: Record<RiskProfile, string> = {
 };
 
 export const RISK_DESCRIPTIONS: Record<RiskProfile, string> = {
-  conservative: '5% — Diversified bond/equity blend',
-  moderate: '7% — S&P 500 inflation-adjusted average',
-  growth: '10% — S&P 500 nominal 100-year average',
+  conservative: '~5%/yr · AGG / BND · Bonds & stable assets',
+  moderate: '~8%/yr · VOO / SPY · S&P 500 index',
+  growth: '~12%/yr · QQQ · Nasdaq 100',
 };
 
 export const SAVINGS_RATE = 0.025;
 
 export const DEFAULT_STATE: SimulatorState = {
-  age: 28,
+  age: 25,
   startingAmount: 0,
   frequency: 'monthly',
-  contributionAmount: 200,
-  years: 37,
+  contributionAmount: 0,
+  years: 40,
   riskProfile: 'moderate',
   projectedValue: 0,
   savingsBenchmark: 0,

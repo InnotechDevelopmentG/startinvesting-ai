@@ -11,19 +11,21 @@ interface StepStartAmountProps {
 
 export default function StepStartAmount({ state, onUpdate, onNext }: StepStartAmountProps) {
   const [inputVal, setInputVal] = useState<string>(
-    state.startingAmount > 0 ? String(state.startingAmount) : ''
+    state.startingAmount > 0 ? state.startingAmount.toLocaleString() : ''
   );
 
-  const parsed = inputVal === '' ? 0 : parseFloat(inputVal.replace(/,/g, ''));
+  const rawNum = parseInt(inputVal.replace(/,/g, ''), 10);
+  const parsed = inputVal === '' ? 0 : (isNaN(rawNum) ? NaN : rawNum);
   const isValid = !isNaN(parsed) && parsed >= 0;
 
   function handleChange(val: string) {
-    const cleaned = val.replace(/[^0-9.]/g, '');
-    setInputVal(cleaned);
-    const n = parseFloat(cleaned);
+    const digits = val.replace(/[^0-9]/g, '');
+    const formatted = digits ? parseInt(digits, 10).toLocaleString() : '';
+    setInputVal(formatted);
+    const n = parseInt(digits, 10);
     if (!isNaN(n) && n >= 0) {
       onUpdate({ startingAmount: n });
-    } else if (cleaned === '') {
+    } else if (!digits) {
       onUpdate({ startingAmount: 0 });
     }
   }
@@ -46,7 +48,7 @@ export default function StepStartAmount({ state, onUpdate, onNext }: StepStartAm
           Step 2 of 6
         </p>
         <h2 className="text-[28px] font-medium text-[#111] leading-tight tracking-tight">
-          How much are you starting with?
+          What are you starting your investment journey with?
         </h2>
         <p className="mt-2 text-[15px] text-[#888]">
           Starting from $0 is completely fine — most people do.
