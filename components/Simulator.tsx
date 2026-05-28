@@ -11,6 +11,7 @@ import {
 import { futureValue } from '@/lib/finance';
 import ChartPanel from './ChartPanel';
 import StepFlow from './StepFlow';
+import Logo from './Logo';
 
 function computeProjections(state: SimulatorState): Pick<SimulatorState, 'projectedValue' | 'savingsBenchmark'> {
   const ppy = FREQUENCY_PER_YEAR[state.frequency];
@@ -56,6 +57,9 @@ export default function Simulator() {
         {/* Chart on top (mobile) */}
         <div className="px-6 pt-8 pb-6 border-b border-[#f3f4f6]">
           <div className="max-w-lg mx-auto">
+            <div className="mb-6">
+              <Logo size={28} />
+            </div>
             <ChartPanel state={state} currentStep={step} />
           </div>
         </div>
@@ -80,9 +84,7 @@ export default function Simulator() {
         <div className="flex-1 sticky top-0 h-screen overflow-y-auto border-r border-[#f3f4f6] px-12 py-12 xl:px-16">
           <div className="max-w-[520px] mx-auto h-full flex flex-col justify-center">
             <div className="mb-8">
-              <span className="text-[13px] font-medium text-[#111] tracking-tight">
-                startinvesting.ai
-              </span>
+              <Logo size={32} />
             </div>
             <ChartPanel state={state} currentStep={step} />
           </div>
