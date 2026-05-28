@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, KeyboardEvent, useRef, useEffect } from 'react';
-import { SimulatorState, FREQUENCY_PER_YEAR } from '@/types/simulator';
+import { SimulatorState, FREQUENCY_PER_YEAR, RISK_LABELS, RISK_RATES } from '@/types/simulator';
 import { formatCurrencyFull, formatCurrency } from '@/lib/finance';
 import ChartPanel from './ChartPanel';
 import Logo from './Logo';
@@ -63,8 +63,8 @@ export default function MobileResultsView({
   const gains = Math.max(state.projectedValue - totalContributed, 0);
   const vsBank = Math.max(state.projectedValue - state.savingsBenchmark, 0);
   const monthlyIncome = Math.round((state.projectedValue * 0.04) / 12);
+  const annualRate = RISK_RATES[state.riskProfile];
 
-  // Auto-focus email input when sheet opens
   useEffect(() => {
     if (sheetOpen && !success) {
       const timer = setTimeout(() => emailInputRef.current?.focus(), 320);
@@ -99,19 +99,17 @@ export default function MobileResultsView({
   }
 
   function handleSheetTouchEnd() {
-    if (sheetDragY > 100) {
-      setSheetOpen(false);
-    }
+    if (sheetDragY > 100) setSheetOpen(false);
     setSheetDragY(0);
   }
 
   return (
     <div className="flex flex-col" style={{ height: '100dvh' }}>
 
-      {/* ── Sticky top bar ── */}
+      {/* ── Top bar ── */}
       <div
         className="flex-shrink-0 bg-white border-b border-[#f3f4f6] px-5 flex items-center justify-between z-10"
-        style={{ height: '56px', paddingTop: 'env(safe-area-inset-top)' }}
+        style={{ height: '52px', paddingTop: 'env(safe-area-inset-top)' }}
       >
         <button
           onClick={onBack}
@@ -122,88 +120,83 @@ export default function MobileResultsView({
           </svg>
           <span className="text-[13px]">Back</span>
         </button>
-        <Logo size={24} />
+        <Logo size={22} />
         <div className="w-12" />
       </div>
 
-      {/* ── Scrollable results body ── */}
+      {/* ── Scrollable body ── */}
       <div className="flex-1 overflow-y-auto overscroll-contain">
         <div
-          className="px-6 pt-7 mx-auto"
+          className="px-5 mx-auto"
           style={{
             maxWidth: '480px',
-            // Extra bottom padding so content clears the sticky CTA bar
-            paddingBottom: 'calc(100px + env(safe-area-inset-bottom))',
+            paddingBottom: 'calc(88px + env(safe-area-inset-bottom))',
           }}
         >
-          {/* Projection reveal */}
-          <p className="text-[11px] font-medium text-[#00C896] uppercase tracking-[0.15em] mb-3">
-            Your projection is ready
-          </p>
-          <span
-            className="font-tabular block mb-1"
-            style={{
-              fontSize: '48px',
-              fontWeight: 500,
-              letterSpacing: '-2.5px',
-              color: '#111',
-              lineHeight: 1,
-            }}
-          >
-            {projectedFormatted}
-          </span>
-          <p className="text-[15px] text-[#888] mb-2">by age {retirementAge}</p>
-          <p className="text-[12px] text-[#bbb] mb-6 flex items-center gap-1">
-            scroll to see your full breakdown
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="animate-bounce">
-              <path d="M5 1v8M2 6l3 3 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </p>
 
-          {/* Chart */}
-          <div className="mb-6">
-            <ChartPanel state={state} currentStep={7} />
+          {/* Hero — compact single projection number */}
+          <div className="pt-5 pb-4">
+            <p className="text-[11px] font-medium text-[#00C896] uppercase tracking-[0.15em] mb-2">
+              Your projection
+            </p>
+            <p
+              className="font-tabular leading-none mb-1"
+              style={{ fontSize: '44px', fontWeight: 600, letterSpacing: '-2.5px', color: '#111' }}
+            >
+              {projectedFormatted}
+            </p>
+            <p className="text-[14px] text-[#888]">
+              by age {retirementAge} · {RISK_LABELS[state.riskProfile]} · {(annualRate * 100).toFixed(0)}%/yr
+            </p>
           </div>
 
-          {/* Stat strip */}
-          <div className="grid grid-cols-3 gap-2.5 mb-6">
-            {[
-              { label: 'You put in', value: formatCurrency(totalContributed), accent: false },
-              { label: 'Market gains', value: `+${formatCurrency(gains)}`, accent: true },
-              { label: 'vs bank', value: `+${formatCurrency(vsBank)}`, accent: false },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className={`rounded-xl px-3 py-3 ${stat.accent ? 'bg-[#E6FAF5]' : 'bg-[#f9f9f9]'}`}
-              >
-                <p className={`text-[10px] font-medium uppercase tracking-wide mb-1 ${stat.accent ? 'text-[#00C896]' : 'text-[#888]'}`}>
-                  {stat.label}
-                </p>
-                <p className={`text-[14px] font-medium font-tabular leading-tight ${stat.accent ? 'text-[#00C896]' : 'text-[#111]'}`}>
-                  {stat.value}
-                </p>
-              </div>
-            ))}
+          {/* Chart — fills most of the viewport */}
+          <div className="mb-2">
+            <ChartPanel
+              state={state}
+              currentStep={7}
+              hideHeader={true}
+              chartHeight="clamp(200px, 42vh, 300px)"
+            />
           </div>
 
-          {/* Retirement income pill */}
-          {monthlyIncome > 0 && (
-            <div className="mb-2">
-              <span className="px-3 py-1.5 rounded-full bg-[#f3f4f6] text-[12px] text-[#555]">
-                {formatCurrency(monthlyIncome)}/mo in retirement · 4% rule
-              </span>
+          {/* Touch hint */}
+          <p className="text-[11px] text-[#ccc] text-center mb-5">
+            touch &amp; drag chart to explore values by year
+          </p>
+
+          {/* Stats — 2×2 grid */}
+          <div className="grid grid-cols-2 gap-2.5 mb-2.5">
+            <div className="rounded-xl bg-[#f9f9f9] px-4 py-3">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-[#888] mb-1">You put in</p>
+              <p className="text-[15px] font-semibold text-[#111] font-tabular">{formatCurrency(totalContributed)}</p>
             </div>
-          )}
+            <div className="rounded-xl bg-[#E6FAF5] px-4 py-3">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-[#00C896] mb-1">Market gains</p>
+              <p className="text-[15px] font-semibold text-[#00C896] font-tabular">+{formatCurrency(gains)}</p>
+            </div>
+            <div className="rounded-xl bg-[#f9f9f9] px-4 py-3">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-[#888] mb-1">vs savings account</p>
+              <p className="text-[15px] font-semibold text-[#111] font-tabular">+{formatCurrency(vsBank)}</p>
+            </div>
+            {monthlyIncome > 0 && (
+              <div className="rounded-xl bg-[#f9f9f9] px-4 py-3">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-[#888] mb-1">Retirement income</p>
+                <p className="text-[15px] font-semibold text-[#111] font-tabular">{formatCurrency(monthlyIncome)}/mo</p>
+                <p className="text-[10px] text-[#bbb] mt-0.5">4% withdrawal rule</p>
+              </div>
+            )}
+          </div>
 
           {/* Disclaimer */}
-          <p className="text-[11px] text-[#ccc] leading-relaxed mt-6">
-            Returns based on historical S&P 500 data. Past performance does not guarantee future results.
-            Educational purposes only. Not financial advice.
+          <p className="text-[11px] text-[#ccc] leading-relaxed mt-4">
+            Based on historical market data. Past performance does not guarantee future results.
+            Educational purposes only — not financial advice.
           </p>
         </div>
       </div>
 
-      {/* ── Sticky bottom CTA bar ── */}
+      {/* ── Sticky bottom CTA ── */}
       <div
         className="flex-shrink-0 bg-white border-t border-[#f3f4f6] px-5 pt-3"
         style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
@@ -225,13 +218,10 @@ export default function MobileResultsView({
       {/* ── Email bottom sheet ── */}
       {sheetOpen && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          {/* Scrim */}
           <div
             className="absolute inset-0 bg-black/40 animate-fade-in"
             onClick={() => setSheetOpen(false)}
           />
-
-          {/* Sheet */}
           <div
             className="relative bg-white rounded-t-2xl animate-slide-up px-6 pt-4"
             style={{
@@ -243,11 +233,10 @@ export default function MobileResultsView({
             onTouchMove={handleSheetTouchMove}
             onTouchEnd={handleSheetTouchEnd}
           >
-            {/* Handle */}
+            {/* Drag handle */}
             <div className="w-10 h-1 bg-[#e5e7eb] rounded-full mx-auto mb-5" />
 
             {success ? (
-              /* Success state */
               <div className="flex flex-col items-center gap-5 text-center py-4">
                 <div className="w-14 h-14 rounded-full bg-[#E6FAF5] flex items-center justify-center">
                   <svg width="24" height="20" viewBox="0 0 28 22" fill="none">
@@ -256,7 +245,7 @@ export default function MobileResultsView({
                 </div>
                 <div>
                   <h3 className="text-[22px] font-medium text-[#111] tracking-tight">You're in.</h3>
-                  <p className="mt-1.5 text-[14px] text-[#888]">Week one is on its way.</p>
+                  <p className="mt-1.5 text-[14px] text-[#888]">Your plan is on its way.</p>
                 </div>
                 <button
                   onClick={onNext}
@@ -266,11 +255,10 @@ export default function MobileResultsView({
                 </button>
               </div>
             ) : (
-              /* Email form */
               <div className="flex flex-col gap-4">
                 <div>
                   <h2 className="text-[20px] font-medium text-[#111] leading-tight tracking-tight">
-                    Get your free week-by-week plan.
+                    Your step-by-step plan is ready.
                   </h2>
                   <p className="text-[13px] text-[#888] mt-1.5 leading-relaxed">
                     Built around {projectedFormatted} by age {retirementAge} — your exact numbers.

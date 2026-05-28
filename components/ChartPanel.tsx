@@ -33,6 +33,8 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, 
 interface ChartPanelProps {
   state: SimulatorState;
   currentStep: number;
+  hideHeader?: boolean;
+  chartHeight?: string;
 }
 
 function formatYAxis(value: number): string {
@@ -41,7 +43,7 @@ function formatYAxis(value: number): string {
   return `$${value}`;
 }
 
-export default function ChartPanel({ state, currentStep }: ChartPanelProps) {
+export default function ChartPanel({ state, currentStep, hideHeader = false, chartHeight = '260px' }: ChartPanelProps) {
   const projectedNumberRef = useRef<HTMLSpanElement>(null);
   const displayValRef = useRef(0);
   const rafRef = useRef<number | null>(null);
@@ -105,8 +107,10 @@ export default function ChartPanel({ state, currentStep }: ChartPanelProps) {
         tension: 0.4,
         borderWidth: 2,
         pointRadius: 0,
-        pointHoverRadius: 5,
+        pointHoverRadius: 6,
         pointHoverBackgroundColor: '#00C896',
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
       },
       {
         label: 'Savings account',
@@ -134,6 +138,7 @@ export default function ChartPanel({ state, currentStep }: ChartPanelProps) {
       mode: 'index',
       intersect: false,
     },
+    events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
     plugins: {
       legend: { display: false },
       tooltip: {
@@ -203,33 +208,35 @@ export default function ChartPanel({ state, currentStep }: ChartPanelProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Projected value */}
-      <div>
-        <p className="text-[13px] font-medium text-[#888] uppercase tracking-widest mb-2">
-          Projected value
-        </p>
-        <span
-          ref={projectedNumberRef}
-          className="font-tabular block"
-          style={{
-            fontSize: '58px',
-            fontWeight: 500,
-            letterSpacing: '-3px',
-            color: '#111',
-            lineHeight: 1,
-          }}
-        >
-          {formatCurrencyFull(state.projectedValue)}
-        </span>
-        {currentStep >= 6 && (
-          <p className="text-[13px] text-[#888] mt-2">
-            {RISK_LABELS[state.riskProfile]} · {(annualRate * 100).toFixed(0)}% avg annual return
+      {/* Projected value — hidden when parent handles display */}
+      {!hideHeader && (
+        <div>
+          <p className="text-[13px] font-medium text-[#888] uppercase tracking-widest mb-2">
+            Projected value
           </p>
-        )}
-      </div>
+          <span
+            ref={projectedNumberRef}
+            className="font-tabular block"
+            style={{
+              fontSize: '58px',
+              fontWeight: 500,
+              letterSpacing: '-3px',
+              color: '#111',
+              lineHeight: 1,
+            }}
+          >
+            {formatCurrencyFull(state.projectedValue)}
+          </span>
+          {currentStep >= 6 && (
+            <p className="text-[13px] text-[#888] mt-2">
+              {RISK_LABELS[state.riskProfile]} · {(annualRate * 100).toFixed(0)}% avg annual return
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Chart */}
-      <div className="relative" style={{ height: '260px' }}>
+      <div className="relative" style={{ height: chartHeight }}>
         <Line data={chartData} options={chartOptions} />
       </div>
 
@@ -247,8 +254,8 @@ export default function ChartPanel({ state, currentStep }: ChartPanelProps) {
         </div>
       </div>
 
-      {/* Insight cards — appear progressively */}
-      {currentStep >= 4 && state.projectedValue > 0 && (
+      {/* Insight cards — appear progressively, hidden on results page */}
+      {!hideHeader && currentStep >= 4 && state.projectedValue > 0 && (
         <div className="flex flex-col gap-3">
           {/* Growth breakdown */}
           <div className="rounded-xl bg-[#E6FAF5] border border-[#c3f0e2] p-4 animate-fade-up">
