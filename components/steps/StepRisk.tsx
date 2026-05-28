@@ -45,7 +45,7 @@ export default function StepRisk({ state: _state, onUpdate, onNext }: StepRiskPr
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5">
       <div>
         <p className="text-sm font-medium text-[#00C896] uppercase tracking-widest mb-3">
           Step 6 of 6
@@ -66,7 +66,7 @@ export default function StepRisk({ state: _state, onUpdate, onNext }: StepRiskPr
             <button
               key={profile}
               onClick={() => handleSelect(profile)}
-              className={`w-full px-5 py-4 rounded-xl text-left transition-all duration-150 border
+              className={`w-full px-5 py-3 rounded-xl text-left transition-all duration-150 border
                 ${isSelected
                   ? 'border-[#00C896] bg-[#E6FAF5]'
                   : 'border-[#e5e7eb] bg-white hover:border-[#00C896]'

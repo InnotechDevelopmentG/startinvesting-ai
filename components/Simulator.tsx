@@ -213,7 +213,7 @@ export default function Simulator() {
             className="w-[480px] xl:w-[520px] flex-shrink-0 overflow-y-auto flex flex-col"
             style={{ height: 'calc(100vh - 64px)' }}
           >
-            <div className="my-auto max-w-[380px] mx-auto w-full px-12 xl:px-16 py-10">
+            <div className="my-auto max-w-[380px] mx-auto w-full px-12 xl:px-16 py-6">
               <StepFlow
                 state={state}
                 currentStep={step}
