@@ -9,6 +9,10 @@ interface StepEmailProps {
   onNext: () => void;
 }
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
 export default function StepEmail({ state, onNext }: StepEmailProps) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,18 +21,11 @@ export default function StepEmail({ state, onNext }: StepEmailProps) {
 
   const retirementAge = state.age > 0 ? Math.max(state.age + state.years, 65) : 65;
   const projectedFormatted = formatCurrencyFull(state.projectedValue);
-
-  const isValidEmail = email.includes('@') && email.includes('.');
+  const valid = isValidEmail(email);
 
   async function handleSubmit() {
-    if (!isValidEmail) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
+    if (!valid) { setError('Please enter a valid email address.'); return; }
+    setLoading(true); setError('');
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
@@ -45,12 +42,7 @@ export default function StepEmail({ state, onNext }: StepEmailProps) {
           savingsBenchmark: state.savingsBenchmark,
         }),
       });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Something went wrong.');
-      }
-
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Something went wrong.'); }
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
@@ -60,7 +52,7 @@ export default function StepEmail({ state, onNext }: StepEmailProps) {
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter' && isValidEmail) handleSubmit();
+    if (e.key === 'Enter' && valid) handleSubmit();
   }
 
   if (success) {
@@ -118,22 +110,20 @@ export default function StepEmail({ state, onNext }: StepEmailProps) {
           onChange={(e) => { setEmail(e.target.value); setError(''); }}
           onKeyDown={handleKeyDown}
           placeholder="your@email.com"
+          autoComplete="email"
           autoFocus
           className="w-full px-4 py-4 text-[16px] rounded-xl border border-[#e5e7eb] focus:border-[#00C896] outline-none transition-colors text-[#111] placeholder:text-[#ccc]"
         />
-
-        {error && <p className="text-sm text-red-500">{error}</p>}
-
+        {error && <p className="text-[13px] text-red-500">{error}</p>}
         <button
           onClick={handleSubmit}
-          disabled={loading || !isValidEmail}
+          disabled={loading || !valid}
           className="w-full py-4 rounded-xl text-[15px] font-medium transition-all duration-200
             bg-[#00C896] text-white disabled:bg-[#e5e7eb] disabled:text-[#aaa] disabled:cursor-not-allowed
             hover:enabled:bg-[#00b386] active:enabled:scale-[0.98]"
         >
           {loading ? 'Sending…' : 'Get my free investing plan'}
         </button>
-
         <button
           onClick={onNext}
           className="w-full py-3 text-[14px] text-[#aaa] hover:text-[#666] transition-colors"

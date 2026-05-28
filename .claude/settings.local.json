@@ -25,7 +25,11 @@
       "Bash(npx tsc:*)",
       "Bash(npm run:*)",
       "Bash(git remote:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "mcp__Claude_in_Chrome__read_page",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

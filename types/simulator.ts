@@ -45,11 +45,11 @@ export const RISK_DESCRIPTIONS: Record<RiskProfile, string> = {
 export const SAVINGS_RATE = 0.025;
 
 export const DEFAULT_STATE: SimulatorState = {
-  age: 0,
+  age: 28,
   startingAmount: 0,
   frequency: 'monthly',
-  contributionAmount: 0,
-  years: 30,
+  contributionAmount: 200,
+  years: 37,
   riskProfile: 'moderate',
   projectedValue: 0,
   savingsBenchmark: 0,

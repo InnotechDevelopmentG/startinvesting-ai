@@ -15,12 +15,16 @@ interface SubscribeBody {
   savingsBenchmark: number;
 }
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body: SubscribeBody = await req.json();
 
     const {
-      email,
+      email: rawEmail,
       age,
       startingAmount,
       frequency,
@@ -31,11 +35,28 @@ export async function POST(req: NextRequest) {
       savingsBenchmark,
     } = body;
 
-    if (!email || typeof email !== 'string' || !email.includes('@')) {
+    const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
+
+    if (!isValidEmail(email)) {
       return NextResponse.json({ error: 'Invalid email address.' }, { status: 400 });
     }
 
     const supabase = getSupabaseClient();
+
+    // Rate limit: one submission per email per hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { data: existing } = await supabase
+      .from('simulator_submissions')
+      .select('id')
+      .eq('email', email)
+      .gte('created_at', oneHourAgo)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      // Silent success — don't reveal whether email exists
+      return NextResponse.json({ success: true });
+    }
+
     const { error: dbError } = await supabase.from('simulator_submissions').insert({
       email,
       age,
@@ -53,19 +74,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to save submission.' }, { status: 500 });
     }
 
-    const retirementAge = Math.max(age + years, 65);
+    const retirementAge = Math.max((age || 0) + (years || 0), 65);
     const formattedProjectedValue = formatCurrencyFull(projectedValue);
 
     try {
-      await sendWelcomeEmail({
-        email,
-        projectedValue,
-        retirementAge,
-        formattedProjectedValue,
-      });
+      await sendWelcomeEmail({ email, projectedValue, retirementAge, formattedProjectedValue });
     } catch (emailError) {
       console.error('Resend email error:', emailError);
-      // Don't fail the request if email fails — DB insert succeeded
+      // DB insert succeeded — don't fail the request
     }
 
     return NextResponse.json({ success: true });

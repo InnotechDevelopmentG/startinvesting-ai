@@ -20,11 +20,22 @@
     font-weight: 400;
   }
 
-  /* Prevent iOS zoom on input focus — all inputs must be >= 16px font */
+  /* Prevent iOS zoom on input focus */
   input, textarea, select {
     font-size: 16px;
   }
 
+  /* Hide number input spin arrows */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+
+  /* Range slider — base */
   input[type='range'] {
     -webkit-appearance: none;
     appearance: none;
@@ -42,10 +53,16 @@
     -webkit-appearance: none;
     appearance: none;
     background: #00C896;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    margin-top: -8px;
+    margin-top: -9px;
+    box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.15);
+    transition: box-shadow 0.15s;
+  }
+
+  input[type='range']:active::-webkit-slider-thumb {
+    box-shadow: 0 0 0 6px rgba(0, 200, 150, 0.2);
   }
 
   input[type='range']::-moz-range-track {
@@ -56,10 +73,11 @@
 
   input[type='range']::-moz-range-thumb {
     background: #00C896;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     border: none;
+    box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.15);
   }
 }
 
@@ -75,5 +93,14 @@
 
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Safe area utilities for notched devices */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }

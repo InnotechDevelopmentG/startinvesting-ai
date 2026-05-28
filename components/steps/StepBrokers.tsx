@@ -26,35 +26,32 @@ export default function StepBrokers({ state }: StepBrokersProps) {
 
       {/* Robinhood card */}
       <div className="rounded-xl border border-[#00C896] bg-[#E6FAF5] p-5">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            {/* Robinhood logo mark */}
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="28" height="28" rx="6" fill="#00C896"/>
-              <path d="M10 20V9h5.2c2.4 0 4.1 1.5 4.1 3.7 0 1.6-.9 2.8-2.2 3.3l2.6 4h-2.9l-2.3-3.6H12.6V20H10zm2.6-5.8h2.4c1 0 1.7-.7 1.7-1.6 0-.9-.7-1.6-1.7-1.6h-2.4v3.2z" fill="white"/>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-lg bg-[#00C896] flex items-center justify-center flex-shrink-0">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M4 14V5h3.8c1.8 0 3 1.1 3 2.7 0 1.2-.7 2.1-1.7 2.5l1.9 3H8.8L7.1 10.4H6.1V14H4zm2.1-5.2H7.9c.8 0 1.3-.5 1.3-1.2 0-.7-.5-1.2-1.3-1.2H6.1v2.4z" fill="white"/>
             </svg>
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="text-[16px] font-medium text-[#111]">Robinhood</p>
-                <span className="text-[11px] font-medium text-[#00C896] bg-white border border-[#00C896] px-2 py-0.5 rounded-full">
-                  Recommended
-                </span>
-              </div>
-              <p className="text-[13px] text-[#888] mt-0.5">Commission-free investing</p>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-[16px] font-medium text-[#111]">Robinhood</p>
+              <span className="text-[11px] font-medium text-[#00C896] bg-white border border-[#00C896] px-2 py-0.5 rounded-full">
+                Recommended
+              </span>
             </div>
+            <p className="text-[13px] text-[#888] mt-0.5">Commission-free investing</p>
           </div>
         </div>
 
         {/* Free stock callout */}
         <div className="flex items-start gap-3 bg-white rounded-lg px-4 py-3 mb-4 border border-[#c3f0e2]">
-          <span className="text-[22px] mt-0.5">🎁</span>
+          <span className="text-[22px] leading-none mt-0.5">🎁</span>
           <div>
             <p className="text-[14px] font-medium text-[#111]">
               Sign up with this link and earn a free stock worth $5 or more!
             </p>
             <p className="text-[12px] text-[#888] mt-0.5">
-              Credited to your account after you sign up.
+              Credited to your account after sign-up.
             </p>
           </div>
         </div>
@@ -87,7 +84,9 @@ export default function StepBrokers({ state }: StepBrokersProps) {
           Get my free stock and open account →
         </a>
 
-        <p className="text-[11px] text-[#aaa] text-center mt-3">
+        {/* FTC disclosure — legally required */}
+        <p className="text-[11px] text-[#aaa] text-center mt-3 leading-relaxed">
+          Affiliate link — we may earn a commission if you open an account, at no extra cost to you.
           Free stock offer subject to Robinhood's terms and conditions.
         </p>
       </div>

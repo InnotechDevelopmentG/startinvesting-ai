@@ -11,12 +11,6 @@ interface StepYearsProps {
 export default function StepYears({ state, onUpdate, onNext }: StepYearsProps) {
   const years = state.years;
   const endAge = state.age > 0 ? state.age + years : null;
-
-  function handleChange(val: number) {
-    onUpdate({ years: val });
-  }
-
-  // Build track fill percentage
   const pct = ((years - 5) / (50 - 5)) * 100;
 
   return (
@@ -57,7 +51,11 @@ export default function StepYears({ state, onUpdate, onNext }: StepYearsProps) {
             max={50}
             step={1}
             value={years}
-            onChange={(e) => handleChange(parseInt(e.target.value, 10))}
+            onChange={(e) => onUpdate({ years: parseInt(e.target.value, 10) })}
+            aria-label={`Years to invest: ${years} years`}
+            aria-valuemin={5}
+            aria-valuemax={50}
+            aria-valuenow={years}
             className="w-full relative z-10"
           />
         </div>

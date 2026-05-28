@@ -49,7 +49,7 @@ export default function MobileResultsView({
 
   const retirementAge = state.age > 0 ? Math.max(state.age + state.years, 65) : 65;
   const projectedFormatted = formatCurrencyFull(state.projectedValue);
-  const isValidEmail = email.includes('@') && email.includes('.');
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
 
   const ppy = FREQUENCY_PER_YEAR[state.frequency];
   const totalContributed = Math.round(
@@ -82,7 +82,7 @@ export default function MobileResultsView({
       {/* Sticky top bar */}
       <div
         className="flex-shrink-0 bg-white border-b border-[#f3f4f6] px-5 flex items-center justify-between z-10"
-        style={{ height: '56px' }}
+        style={{ height: '56px', paddingTop: 'env(safe-area-inset-top)', marginTop: '0' }}
       >
         <button
           onClick={onBack}
@@ -99,7 +99,7 @@ export default function MobileResultsView({
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto overscroll-contain">
-        <div className="px-6 pt-7 pb-16 mx-auto" style={{ maxWidth: '480px' }}>
+        <div className="px-6 pt-7 mx-auto" style={{ maxWidth: '480px', paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }}>
 
           {/* ── REVEAL HEADER ── */}
           <p className="text-[11px] font-medium text-[#00C896] uppercase tracking-[0.15em] mb-3">

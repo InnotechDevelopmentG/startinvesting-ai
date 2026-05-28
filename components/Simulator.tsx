@@ -107,7 +107,7 @@ export default function Simulator() {
             {/* Sticky top bar */}
             <div
               className="flex-shrink-0 bg-white border-b border-[#f3f4f6] px-5 flex items-center justify-between z-10"
-              style={{ height: '56px' }}
+              style={{ height: '56px', paddingTop: 'env(safe-area-inset-top)' }}
             >
               <Logo size={26} />
               <button
@@ -133,7 +133,7 @@ export default function Simulator() {
 
             {/* Step content */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
-              <div className="px-6 pt-8 pb-16 mx-auto" style={{ maxWidth: '480px' }}>
+              <div className="px-6 pt-8 mx-auto" style={{ maxWidth: '480px', paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }}>
                 <StepFlow
                   state={state}
                   currentStep={step}
