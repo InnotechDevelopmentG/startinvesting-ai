@@ -78,7 +78,18 @@ export async function POST(req: NextRequest) {
     const formattedProjectedValue = formatCurrencyFull(projectedValue);
 
     try {
-      await sendWelcomeEmail({ email, projectedValue, retirementAge, formattedProjectedValue });
+      await sendWelcomeEmail({
+        email,
+        age,
+        startingAmount,
+        contributionAmount,
+        frequency,
+        years,
+        riskProfile,
+        projectedValue,
+        retirementAge,
+        formattedProjectedValue,
+      });
     } catch (emailError) {
       console.error('Resend email error:', emailError);
       // DB insert succeeded — don't fail the request
