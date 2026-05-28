@@ -190,29 +190,42 @@ export default function Simulator() {
       </div>
 
       {/* ─────────────── DESKTOP ─────────────── */}
-      <div className="hidden lg:flex min-h-screen">
-        {/* Left panel — chart */}
+      <div className="hidden lg:flex flex-col min-h-screen">
+
+        {/* Top header bar */}
         <div
-          className="flex-1 sticky top-0 h-screen overflow-y-auto border-r border-[#f3f4f6] px-12 py-12 xl:px-16"
+          className="flex-shrink-0 bg-white border-b border-[#f3f4f6] px-12 xl:px-16 flex items-center z-10"
+          style={{ height: '64px' }}
         >
-          <div className="max-w-[520px] mx-auto h-full flex flex-col justify-center">
-            <div className="mb-8">
-              <Logo size={28} />
-            </div>
-            <ChartPanel state={state} currentStep={step} />
-          </div>
+          <Logo size={30} />
         </div>
 
-        {/* Right panel — steps */}
-        <div className="w-[480px] xl:w-[520px] flex-shrink-0 px-12 py-12 xl:px-16 overflow-y-auto">
-          <div className="max-w-[380px] mx-auto min-h-full flex flex-col justify-center">
-            <StepFlow
-              state={state}
-              currentStep={step}
-              onUpdate={handleUpdate}
-              onNext={handleNext}
-              onBack={handleBack}
-            />
+        {/* Two-column content */}
+        <div className="flex flex-1">
+          {/* Left panel — chart */}
+          <div
+            className="flex-1 border-r border-[#f3f4f6] px-12 py-10 xl:px-16 overflow-y-auto"
+            style={{ position: 'sticky', top: '64px', height: 'calc(100vh - 64px)' }}
+          >
+            <div className="max-w-[520px] mx-auto h-full flex flex-col justify-center">
+              <ChartPanel state={state} currentStep={step} />
+            </div>
+          </div>
+
+          {/* Right panel — steps */}
+          <div
+            className="w-[480px] xl:w-[520px] flex-shrink-0 px-12 py-10 xl:px-16 overflow-y-auto"
+            style={{ maxHeight: 'calc(100vh - 64px)' }}
+          >
+            <div className="max-w-[380px] mx-auto min-h-full flex flex-col justify-center">
+              <StepFlow
+                state={state}
+                currentStep={step}
+                onUpdate={handleUpdate}
+                onNext={handleNext}
+                onBack={handleBack}
+              />
+            </div>
           </div>
         </div>
       </div>
