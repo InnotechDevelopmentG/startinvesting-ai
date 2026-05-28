@@ -106,33 +106,39 @@ export default function Simulator() {
 
             {/* Sticky top bar */}
             <div
-              className="flex-shrink-0 bg-white border-b border-[#f3f4f6] px-5 flex items-center justify-between z-10"
+              className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10 relative"
               style={{ height: '56px', paddingTop: 'env(safe-area-inset-top)' }}
             >
-              <Logo size={26} />
-              <button
-                onClick={() => setChartSheetOpen(true)}
-                className="flex items-center gap-2 pl-3 pr-3.5 py-1.5 rounded-full bg-[#f3f4f6] active:bg-[#e5e7eb] transition-colors"
-                aria-label="View your projection chart"
-              >
-                <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                  <polyline points="0,11 4,6 8,8 15,1" stroke="#00C896" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                </svg>
-                {state.projectedValue > 0 ? (
-                  <span
-                    ref={mobileValueRef}
-                    className="font-tabular text-[14px] font-medium text-[#111]"
-                    style={{ letterSpacing: '-0.02em' }}
-                  >
-                    {formatCurrencyFull(state.projectedValue)}
-                  </span>
-                ) : (
-                  <span className="text-[13px] text-[#aaa]">your projection</span>
-                )}
-                <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
-                  <path d="M1 1l4 4 4-4" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
+              {/* Logo — always centered */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <Logo size={24} />
+              </div>
+              {/* Chart pill — right */}
+              <div className="absolute right-4 top-0 bottom-0 flex items-center">
+                <button
+                  onClick={() => setChartSheetOpen(true)}
+                  className="flex items-center gap-2 pl-3 pr-3.5 py-1.5 rounded-full bg-[#f3f4f6] active:bg-[#e5e7eb] transition-colors"
+                  aria-label="View your projection chart"
+                >
+                  <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+                    <polyline points="0,11 4,6 8,8 15,1" stroke="#00C896" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                  </svg>
+                  {state.projectedValue > 0 ? (
+                    <span
+                      ref={mobileValueRef}
+                      className="font-tabular text-[14px] font-medium text-[#111]"
+                      style={{ letterSpacing: '-0.02em' }}
+                    >
+                      {formatCurrencyFull(state.projectedValue)}
+                    </span>
+                  ) : (
+                    <span className="text-[13px] text-[#aaa]">your projection</span>
+                  )}
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                    <path d="M1 1l4 4 4-4" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {/* Step content */}
@@ -191,7 +197,7 @@ export default function Simulator() {
         >
           <div className="max-w-[520px] mx-auto h-full flex flex-col justify-center">
             <div className="mb-8">
-              <Logo size={32} />
+              <Logo size={28} />
             </div>
             <ChartPanel state={state} currentStep={step} />
           </div>

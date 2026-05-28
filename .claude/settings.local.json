@@ -43,7 +43,8 @@
       "Bash(dig @8.8.8.8 www.startinvesting.ai A +short)",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} — SSL: %{ssl_verify_result}\" --max-time 15 https://startinvesting.ai)",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" --max-time 15 http://startinvesting.ai)",
-      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" --max-time 15 --resolve \"startinvesting.ai:443:76.76.21.21\" https://startinvesting.ai)"
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" --max-time 15 --resolve \"startinvesting.ai:443:76.76.21.21\" https://startinvesting.ai)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --resolve \"startinvesting.ai:443:76.76.21.21\" https://startinvesting.ai --max-time 10)"
     ]
   }
 }

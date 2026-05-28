@@ -108,20 +108,25 @@ export default function MobileResultsView({
 
       {/* ── Top bar ── */}
       <div
-        className="flex-shrink-0 bg-white border-b border-[#f3f4f6] px-5 flex items-center justify-between z-10"
-        style={{ height: '52px', paddingTop: 'env(safe-area-inset-top)' }}
+        className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10 relative"
+        style={{ height: '56px', paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 text-[#888] hover:text-[#111] transition-colors"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span className="text-[13px]">Back</span>
-        </button>
-        <Logo size={22} />
-        <div className="w-12" />
+        {/* Logo — always centered */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <Logo size={24} />
+        </div>
+        {/* Back button — left */}
+        <div className="absolute left-4 top-0 bottom-0 flex items-center">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-[#888] hover:text-[#111] transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className="text-[13px]">Back</span>
+          </button>
+        </div>
       </div>
 
       {/* ── Scrollable body ── */}
