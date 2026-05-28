@@ -12,6 +12,7 @@ import { futureValue, formatCurrencyFull, easeOutQuart } from '@/lib/finance';
 import ChartPanel from './ChartPanel';
 import StepFlow from './StepFlow';
 import Logo from './Logo';
+import MobileResultsView from './MobileResultsView';
 
 function computeProjections(
   state: SimulatorState
@@ -88,89 +89,92 @@ export default function Simulator() {
     <div className="bg-white">
 
       {/* ─────────────── MOBILE ─────────────── */}
-      <div className="lg:hidden flex flex-col" style={{ height: '100dvh' }}>
+      <div className="lg:hidden">
 
-        {/* Sticky top bar */}
-        <div className="flex-shrink-0 bg-white border-b border-[#f3f4f6] px-5 flex items-center justify-between" style={{ height: '56px' }}>
-          <Logo size={26} />
+        {/* Step 7 on mobile: full-screen results reveal */}
+        {step === 7 && (
+          <MobileResultsView
+            state={state}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
+        )}
 
-          {/* Tap to open chart sheet */}
-          <button
-            onClick={() => setChartSheetOpen(true)}
-            className="flex items-center gap-2 pl-3 pr-3.5 py-1.5 rounded-full bg-[#f3f4f6] active:bg-[#e5e7eb] transition-colors"
-            aria-label="View your projection chart"
-          >
-            {/* Mini sparkline icon */}
-            <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-              <polyline
-                points="0,11 4,6 8,8 15,1"
-                stroke="#00C896"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-            </svg>
-            <span
-              ref={mobileValueRef}
-              className="font-tabular text-[14px] font-medium text-[#111]"
-              style={{ letterSpacing: '-0.02em' }}
-            >
-              {formatCurrencyFull(state.projectedValue)}
-            </span>
-            {/* Chevron down */}
-            <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
-              <path d="M1 1l4 4 4-4" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </div>
+        {/* Steps 1–6 and 8: top bar + full-screen step flow */}
+        {step !== 7 && (
+          <div className="flex flex-col" style={{ height: '100dvh' }}>
 
-        {/* Step content — full height, scrollable */}
-        <div className="flex-1 overflow-y-auto overscroll-contain">
-          <div className="px-6 pt-8 pb-16 mx-auto" style={{ maxWidth: '480px' }}>
-            <StepFlow
-              state={state}
-              currentStep={step}
-              onUpdate={handleUpdate}
-              onNext={handleNext}
-              onBack={handleBack}
-            />
-          </div>
-        </div>
-
-        {/* Chart bottom sheet */}
-        {chartSheetOpen && (
-          <div className="fixed inset-0 z-50 flex flex-col justify-end">
-            {/* Backdrop */}
+            {/* Sticky top bar */}
             <div
-              className="absolute inset-0 bg-black/40 animate-fade-in"
-              onClick={() => setChartSheetOpen(false)}
-            />
-            {/* Sheet */}
-            <div
-              className="relative bg-white rounded-t-2xl animate-slide-up overflow-y-auto"
-              style={{ maxHeight: '88vh' }}
+              className="flex-shrink-0 bg-white border-b border-[#f3f4f6] px-5 flex items-center justify-between z-10"
+              style={{ height: '56px' }}
             >
-              {/* Pull handle */}
-              <div className="sticky top-0 bg-white pt-3 pb-2 px-6 z-10">
-                <div className="w-10 h-1 bg-[#e5e7eb] rounded-full mx-auto" />
-                <div className="flex items-center justify-between mt-4">
-                  <p className="text-[15px] font-medium text-[#111]">Your projection</p>
-                  <button
-                    onClick={() => setChartSheetOpen(false)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f3f4f6] text-[#888]"
-                    aria-label="Close chart"
-                  >
-                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                      <path d="M1 1l9 9M10 1L1 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div className="px-6 pb-10">
-                <ChartPanel state={state} currentStep={step} />
+              <Logo size={26} />
+              <button
+                onClick={() => setChartSheetOpen(true)}
+                className="flex items-center gap-2 pl-3 pr-3.5 py-1.5 rounded-full bg-[#f3f4f6] active:bg-[#e5e7eb] transition-colors"
+                aria-label="View your projection chart"
+              >
+                <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+                  <polyline points="0,11 4,6 8,8 15,1" stroke="#00C896" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                </svg>
+                <span
+                  ref={mobileValueRef}
+                  className="font-tabular text-[14px] font-medium text-[#111]"
+                  style={{ letterSpacing: '-0.02em' }}
+                >
+                  {formatCurrencyFull(state.projectedValue)}
+                </span>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                  <path d="M1 1l4 4 4-4" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Step content */}
+            <div className="flex-1 overflow-y-auto overscroll-contain">
+              <div className="px-6 pt-8 pb-16 mx-auto" style={{ maxWidth: '480px' }}>
+                <StepFlow
+                  state={state}
+                  currentStep={step}
+                  onUpdate={handleUpdate}
+                  onNext={handleNext}
+                  onBack={handleBack}
+                />
               </div>
             </div>
+
+            {/* Chart bottom sheet */}
+            {chartSheetOpen && (
+              <div className="fixed inset-0 z-50 flex flex-col justify-end">
+                <div
+                  className="absolute inset-0 bg-black/40 animate-fade-in"
+                  onClick={() => setChartSheetOpen(false)}
+                />
+                <div
+                  className="relative bg-white rounded-t-2xl animate-slide-up overflow-y-auto"
+                  style={{ maxHeight: '88vh' }}
+                >
+                  <div className="sticky top-0 bg-white pt-3 pb-2 px-6 z-10">
+                    <div className="w-10 h-1 bg-[#e5e7eb] rounded-full mx-auto" />
+                    <div className="flex items-center justify-between mt-4">
+                      <p className="text-[15px] font-medium text-[#111]">Your projection</p>
+                      <button
+                        onClick={() => setChartSheetOpen(false)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f3f4f6] text-[#888]"
+                      >
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                          <path d="M1 1l9 9M10 1L1 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="px-6 pb-10">
+                    <ChartPanel state={state} currentStep={step} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
