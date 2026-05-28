@@ -109,9 +109,9 @@ export default function Simulator() {
               className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10 relative"
               style={{ height: '56px', paddingTop: 'env(safe-area-inset-top)' }}
             >
-              {/* Logo — always centered */}
+              {/* Logo — always centered, icon-only on mobile */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <Logo size={24} />
+                <Logo size={28} iconOnly />
               </div>
               {/* Chart pill — right */}
               <div className="absolute right-4 top-0 bottom-0 flex items-center">

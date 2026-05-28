@@ -206,6 +206,8 @@ export default function ChartPanel({ state, currentStep, hideHeader = false, cha
     return series[series.length - 1];
   }, [state.startingAmount, state.contributionAmount, annualRate, ppy, state.years]);
 
+  const hasData = state.contributionAmount > 0;
+
   return (
     <div className="flex flex-col gap-6">
       {/* Projected value — hidden when parent handles display */}
@@ -214,31 +216,56 @@ export default function ChartPanel({ state, currentStep, hideHeader = false, cha
           <p className="text-[13px] font-medium text-[#888] uppercase tracking-widest mb-2">
             Projected value
           </p>
-          <span
-            ref={projectedNumberRef}
-            className="font-tabular block"
-            style={{
-              fontSize: '58px',
-              fontWeight: 500,
-              letterSpacing: '-3px',
-              color: '#111',
-              lineHeight: 1,
-            }}
-          >
-            {formatCurrencyFull(state.projectedValue)}
-          </span>
-          {currentStep >= 6 && (
-            <p className="text-[13px] text-[#888] mt-2">
-              {RISK_LABELS[state.riskProfile]} · {(annualRate * 100).toFixed(0)}% avg annual return
-            </p>
+          {hasData ? (
+            <>
+              <span
+                ref={projectedNumberRef}
+                className="font-tabular block"
+                style={{ fontSize: '58px', fontWeight: 500, letterSpacing: '-3px', color: '#111', lineHeight: 1 }}
+              >
+                {formatCurrencyFull(state.projectedValue)}
+              </span>
+              {currentStep >= 6 && (
+                <p className="text-[13px] text-[#888] mt-2">
+                  {RISK_LABELS[state.riskProfile]} · {(annualRate * 100).toFixed(0)}% avg annual return
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <span
+                className="font-tabular block"
+                style={{ fontSize: '58px', fontWeight: 500, letterSpacing: '-3px', color: '#e5e7eb', lineHeight: 1 }}
+              >
+                —
+              </span>
+              <p className="text-[13px] text-[#bbb] mt-2">
+                Fill in your details to see your projection
+              </p>
+            </>
           )}
         </div>
       )}
 
-      {/* Chart */}
-      <div className="relative" style={{ height: chartHeight }}>
-        <Line data={chartData} options={chartOptions} />
-      </div>
+      {/* Chart — show placeholder when no data */}
+      {!hasData && !hideHeader ? (
+        <div
+          className="flex flex-col items-center justify-center gap-3 rounded-xl bg-[#fafafa] border border-[#f3f4f6]"
+          style={{ height: chartHeight }}
+        >
+          <svg width="40" height="32" viewBox="0 0 40 32" fill="none">
+            <polyline points="2,28 10,18 20,22 38,4" stroke="#e5e7eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="38" cy="4" r="3" fill="#e5e7eb"/>
+          </svg>
+          <p className="text-[13px] text-[#ccc] text-center px-8">
+            Your growth chart will appear as you complete the steps
+          </p>
+        </div>
+      ) : (
+        <div className="relative" style={{ height: chartHeight }}>
+          <Line data={chartData} options={chartOptions} />
+        </div>
+      )}
 
       {/* Custom legend */}
       <div className="flex items-center gap-5">
