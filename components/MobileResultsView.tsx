@@ -108,15 +108,10 @@ export default function MobileResultsView({
 
       {/* ── Top bar ── */}
       <div
-        className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10 relative"
-        style={{ height: '56px', paddingTop: 'env(safe-area-inset-top)' }}
+        className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
-        {/* Logo — always centered, icon-only on mobile */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <Logo size={28} iconOnly />
-        </div>
-        {/* Back button — left */}
-        <div className="absolute left-4 top-0 bottom-0 flex items-center">
+        <div className="flex items-center justify-between px-4" style={{ height: '56px' }}>
           <button
             onClick={onBack}
             className="flex items-center gap-1.5 text-[#888] hover:text-[#111] transition-colors"
@@ -126,6 +121,9 @@ export default function MobileResultsView({
             </svg>
             <span className="text-[13px]">Back</span>
           </button>
+          <Logo size={26} />
+          {/* Spacer to balance back button and keep logo visually centered */}
+          <div style={{ width: '48px' }} />
         </div>
       </div>
 

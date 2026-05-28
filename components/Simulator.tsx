@@ -106,15 +106,11 @@ export default function Simulator() {
 
             {/* Sticky top bar */}
             <div
-              className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10 relative"
-              style={{ height: '56px', paddingTop: 'env(safe-area-inset-top)' }}
+              className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10"
+              style={{ paddingTop: 'env(safe-area-inset-top)' }}
             >
-              {/* Logo — always centered, icon-only on mobile */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <Logo size={28} iconOnly />
-              </div>
-              {/* Chart pill — right */}
-              <div className="absolute right-4 top-0 bottom-0 flex items-center">
+              <div className="flex items-center justify-between px-4" style={{ height: '56px' }}>
+                <Logo size={26} />
                 <button
                   onClick={() => setChartSheetOpen(true)}
                   className="flex items-center gap-2 pl-3 pr-3.5 py-1.5 rounded-full bg-[#f3f4f6] active:bg-[#e5e7eb] transition-colors"
@@ -204,20 +200,20 @@ export default function Simulator() {
         <div className="flex flex-1">
           {/* Left panel — chart */}
           <div
-            className="flex-1 border-r border-[#f3f4f6] px-12 py-10 xl:px-16 overflow-y-auto"
+            className="flex-1 border-r border-[#f3f4f6] overflow-y-auto flex flex-col"
             style={{ position: 'sticky', top: '64px', height: 'calc(100vh - 64px)' }}
           >
-            <div className="max-w-[520px] mx-auto h-full flex flex-col justify-center">
+            <div className="my-auto max-w-[520px] mx-auto w-full px-12 xl:px-16 py-10">
               <ChartPanel state={state} currentStep={step} />
             </div>
           </div>
 
           {/* Right panel — steps */}
           <div
-            className="w-[480px] xl:w-[520px] flex-shrink-0 px-12 py-10 xl:px-16 overflow-y-auto"
-            style={{ maxHeight: 'calc(100vh - 64px)' }}
+            className="w-[480px] xl:w-[520px] flex-shrink-0 overflow-y-auto flex flex-col"
+            style={{ height: 'calc(100vh - 64px)' }}
           >
-            <div className="max-w-[380px] mx-auto min-h-full flex flex-col justify-center">
+            <div className="my-auto max-w-[380px] mx-auto w-full px-12 xl:px-16 py-10">
               <StepFlow
                 state={state}
                 currentStep={step}

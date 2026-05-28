@@ -73,7 +73,7 @@ export default function StepFlow({
   const showProgress = currentStep <= PROGRESS_STEPS;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       {/* Top bar: back button + progress dots */}
       <div className="flex items-center justify-between mb-8">
         <div className="w-8">
@@ -121,7 +121,7 @@ export default function StepFlow({
       </div>
 
       {/* Step content with slide animation */}
-      <div className="flex-1 overflow-hidden">
+      <div className="overflow-hidden">
         <div key={animKey} className={animClass}>
           {renderStep()}
         </div>
