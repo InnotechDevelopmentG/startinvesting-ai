@@ -1,53 +1,46 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  darkMode: "class",
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
-        background: "#0A0A0B",
-        card: "#141416",
-        border: "#1F1F22",
-        accent: {
-          green: "#16C784",
-          red: "#EA3943",
-        },
+        brand: '#00C896',
+        'brand-light': '#E6FAF5',
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        mono: ["var(--font-jetbrains)", "monospace"],
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'SF Pro Text',
+          'SF Pro Display',
+          'Helvetica Neue',
+          'Arial',
+          'sans-serif',
+        ],
       },
       keyframes: {
-        pulse: {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.4" },
+        'slide-in-right': {
+          '0%': { transform: 'translateX(40px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
         },
-        flash: {
-          "0%": { opacity: "1" },
-          "50%": { opacity: "0.6" },
-          "100%": { opacity: "1" },
+        'slide-in-left': {
+          '0%': { transform: 'translateX(-40px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
         },
-        "glow-green": {
-          "0%": { boxShadow: "0 0 0 0 rgba(22,199,132,0)" },
-          "50%": { boxShadow: "0 0 16px 2px rgba(22,199,132,0.25)" },
-          "100%": { boxShadow: "0 0 0 0 rgba(22,199,132,0)" },
-        },
-        "glow-red": {
-          "0%": { boxShadow: "0 0 0 0 rgba(234,57,67,0)" },
-          "50%": { boxShadow: "0 0 16px 2px rgba(234,57,67,0.25)" },
-          "100%": { boxShadow: "0 0 0 0 rgba(234,57,67,0)" },
+        'fade-up': {
+          '0%': { transform: 'translateY(12px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       },
       animation: {
-        pulse: "pulse 2s ease-in-out infinite",
-        flash: "flash 0.6s ease-in-out",
-        "glow-green": "glow-green 1.2s ease-in-out",
-        "glow-red": "glow-red 1.2s ease-in-out",
+        'slide-in-right': 'slide-in-right 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'slide-in-left': 'slide-in-left 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'fade-up': 'fade-up 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards',
       },
     },
   },
