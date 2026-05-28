@@ -35,6 +35,7 @@ interface ChartPanelProps {
   currentStep: number;
   hideHeader?: boolean;
   chartHeight?: string;
+  insightMinStep?: number;
 }
 
 function formatYAxis(value: number): string {
@@ -43,7 +44,7 @@ function formatYAxis(value: number): string {
   return `$${value}`;
 }
 
-export default function ChartPanel({ state, currentStep, hideHeader = false, chartHeight = '260px' }: ChartPanelProps) {
+export default function ChartPanel({ state, currentStep, hideHeader = false, chartHeight = '260px', insightMinStep = 4 }: ChartPanelProps) {
   const projectedNumberRef = useRef<HTMLSpanElement>(null);
   const displayValRef = useRef(0);
   const rafRef = useRef<number | null>(null);
@@ -282,7 +283,7 @@ export default function ChartPanel({ state, currentStep, hideHeader = false, cha
       </div>
 
       {/* Insight cards — appear progressively, hidden on results page */}
-      {!hideHeader && currentStep >= 4 && state.projectedValue > 0 && (
+      {!hideHeader && currentStep >= insightMinStep && state.projectedValue > 0 && (
         <div className="flex flex-col gap-3">
           {/* Growth breakdown */}
           <div className="rounded-xl bg-[#E6FAF5] border border-[#c3f0e2] p-4 animate-fade-up">
@@ -332,7 +333,7 @@ export default function ChartPanel({ state, currentStep, hideHeader = false, cha
           </div>
 
           {/* 5 years earlier */}
-          {currentStep >= 5 && fiveYearEarlierValue !== null && (
+          {currentStep >= insightMinStep + 1 && fiveYearEarlierValue !== null && (
             <div className="rounded-xl border border-[#e5e7eb] p-4 animate-fade-up">
               <p className="text-[11px] font-medium text-[#888] uppercase tracking-wide mb-3">
                 If you started 5 years earlier
@@ -355,7 +356,7 @@ export default function ChartPanel({ state, currentStep, hideHeader = false, cha
           )}
 
           {/* Translation pills */}
-          {currentStep >= 6 && state.projectedValue > 0 && (
+          {currentStep >= insightMinStep + 2 && state.projectedValue > 0 && (
             <div className="flex flex-wrap gap-2 animate-fade-up">
               {salaryMultiple && (
                 <span className="px-3 py-1.5 rounded-full bg-[#f3f4f6] text-[12px] text-[#555]">

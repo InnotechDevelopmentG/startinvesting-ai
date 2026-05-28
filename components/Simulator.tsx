@@ -203,8 +203,8 @@ export default function Simulator() {
             className="flex-1 border-r border-[#f3f4f6] overflow-y-auto flex flex-col"
             style={{ position: 'sticky', top: '64px', height: 'calc(100vh - 64px)' }}
           >
-            <div className="my-auto max-w-[520px] mx-auto w-full px-12 xl:px-16 py-10">
-              <ChartPanel state={state} currentStep={step} />
+            <div className="my-auto max-w-[520px] mx-auto w-full px-12 xl:px-16 py-8">
+              <ChartPanel state={state} currentStep={step} chartHeight="220px" insightMinStep={7} />
             </div>
           </div>
 
