@@ -23,7 +23,7 @@ function computeProjections(
     futureValue(state.startingAmount, state.contributionAmount, annualRate, ppy, state.years)
   );
   const savingsBenchmark = Math.round(
-    futureValue(state.startingAmount, state.contributionAmount, SAVINGS_RATE, 12, state.years)
+    futureValue(state.startingAmount, state.contributionAmount, SAVINGS_RATE, ppy, state.years)
   );
   return { projectedValue, savingsBenchmark };
 }

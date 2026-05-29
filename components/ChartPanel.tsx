@@ -87,8 +87,8 @@ export default function ChartPanel({ state, currentStep, hideHeader = false, cha
   );
 
   const savingsSeries = useMemo(
-    () => calcSeries(state.startingAmount, state.contributionAmount, SAVINGS_RATE, 12, state.years),
-    [state.startingAmount, state.contributionAmount, state.years]
+    () => calcSeries(state.startingAmount, state.contributionAmount, SAVINGS_RATE, ppy, state.years),
+    [state.startingAmount, state.contributionAmount, ppy, state.years]
   );
 
   const labels = useMemo(
