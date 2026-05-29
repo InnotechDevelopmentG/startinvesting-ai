@@ -13,6 +13,7 @@ import ChartPanel from './ChartPanel';
 import StepFlow from './StepFlow';
 import Logo from './Logo';
 import MobileResultsView from './MobileResultsView';
+import EarlyEmailCapture from './EarlyEmailCapture';
 
 function computeProjections(
   state: SimulatorState
@@ -31,6 +32,7 @@ function computeProjections(
 export default function Simulator() {
   const [step, setStep] = useState(1);
   const [chartSheetOpen, setChartSheetOpen] = useState(false);
+  const [showEarlyCapture, setShowEarlyCapture] = useState(false);
   const [state, setState] = useState<SimulatorState>(() => {
     const base = { ...DEFAULT_STATE };
     return { ...base, ...computeProjections(base) };
@@ -82,11 +84,21 @@ export default function Simulator() {
     });
   }, []);
 
-  const handleNext = useCallback(() => setStep((s) => Math.min(s + 1, 8)), []);
+  const handleNext = useCallback(() => {
+    setStep((s) => {
+      const next = Math.min(s + 1, 8);
+      // Show early email capture after step 1, once per visitor
+      if (s === 1 && typeof window !== 'undefined' && !localStorage.getItem('early_capture_shown')) {
+        localStorage.setItem('early_capture_shown', '1');
+        setTimeout(() => setShowEarlyCapture(true), 200);
+      }
+      return next;
+    });
+  }, []);
   const handleBack = useCallback(() => setStep((s) => Math.max(s - 1, 1)), []);
 
   return (
-    <div className="bg-white">
+    <div className="bg-white" style={{ position: 'relative' }}>
 
       {/* ─────────────── MOBILE ─────────────── */}
       <div className="lg:hidden">
@@ -225,6 +237,14 @@ export default function Simulator() {
           </div>
         </div>
       </div>
+
+      {/* Early email capture modal — appears after step 1 on all screen sizes */}
+      {showEarlyCapture && (
+        <EarlyEmailCapture
+          age={state.age}
+          onDismiss={() => setShowEarlyCapture(false)}
+        />
+      )}
     </div>
   );
 }
