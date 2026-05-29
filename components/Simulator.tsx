@@ -88,7 +88,7 @@ export default function Simulator() {
     setStep((s) => {
       const next = Math.min(s + 1, 8);
       // Show early email capture after step 1, once per visitor
-      if (s === 1 && typeof window !== 'undefined' && !localStorage.getItem('early_capture_shown')) {
+      if (s === 3 && typeof window !== 'undefined' && !localStorage.getItem('early_capture_shown')) {
         localStorage.setItem('early_capture_shown', '1');
         setTimeout(() => setShowEarlyCapture(true), 200);
       }
