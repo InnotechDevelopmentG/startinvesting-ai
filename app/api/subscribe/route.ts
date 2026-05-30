@@ -74,6 +74,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to save submission.' }, { status: 500 });
     }
 
+    // Also add to newsletter subscribers so they get daily market emails
+    await supabase
+      .from('newsletter_subscribers')
+      .upsert({ email }, { onConflict: 'email', ignoreDuplicates: true });
+
     const retirementAge = Math.max((age || 0) + (years || 0), 65);
     const formattedProjectedValue = formatCurrencyFull(projectedValue);
 

@@ -42,6 +42,11 @@ export async function POST(req: NextRequest) {
       savings_benchmark: null,
     });
 
+    // Add to newsletter subscribers for daily market emails
+    await supabase
+      .from('newsletter_subscribers')
+      .upsert({ email }, { onConflict: 'email', ignoreDuplicates: true });
+
     try {
       await sendEarlyWelcomeEmail(email);
     } catch (emailErr) {
