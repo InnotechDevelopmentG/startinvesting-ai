@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
+import ArticleSubscribe from '@/components/ArticleSubscribe';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -131,6 +132,9 @@ export default async function ArticlePage({ params }: Props) {
           </p>
         </div>
 
+        {/* Subscribe — top */}
+        <ArticleSubscribe position="top" />
+
         {/* Divider */}
         <div className="border-t border-[#f3f4f6] mb-8" />
 
@@ -153,6 +157,9 @@ export default async function ArticlePage({ params }: Props) {
             ))}
           </div>
         )}
+
+        {/* Subscribe — bottom */}
+        <ArticleSubscribe position="bottom" />
 
         {/* Disclaimer */}
         <p className="text-[11px] text-[#bbb] leading-relaxed border-t border-[#f3f4f6] pt-6 mb-10">
