@@ -47,7 +47,15 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" --resolve \"startinvesting.ai:443:76.76.21.21\" https://startinvesting.ai --max-time 10)",
       "Bash(ls /Users/griffenaddie/SWIH/supabase*)",
       "Bash(~/.nvm/versions/node/v20.20.2/bin/node_modules/.bin/tsc --noEmit)",
-      "Bash(~/.nvm/versions/node/v20.20.2/bin/npx tsc:*)"
+      "Bash(~/.nvm/versions/node/v20.20.2/bin/npx tsc:*)",
+      "Bash(npx vercel:*)",
+      "Bash(/opt/homebrew/bin/node --version)",
+      "Bash(/usr/local/bin/node --version)",
+      "Bash(/opt/homebrew/bin/npx vercel:*)",
+      "Bash(source ~/.zshrc)",
+      "Bash(/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin/node /Users/griffenaddie/.nvm/versions/node/v20.20.2/bin/npx vercel --prod --yes)",
+      "Bash(export NVM_DIR=\"$HOME/.nvm\")",
+      "Bash(export PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\")"
     ]
   }
 }

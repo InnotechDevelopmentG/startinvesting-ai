@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import ConditionalSiteHeader from '@/components/ConditionalSiteHeader';
+import ConditionalFooter from '@/components/ConditionalFooter';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ConditionalSiteHeader />
         {children}
+        <ConditionalFooter />
       </body>
     </html>
   );
