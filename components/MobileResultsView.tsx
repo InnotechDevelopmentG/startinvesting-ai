@@ -4,7 +4,6 @@ import { useState, KeyboardEvent, useRef, useEffect, useCallback } from 'react';
 import { SimulatorState, FREQUENCY_PER_YEAR, RISK_LABELS, RISK_RATES } from '@/types/simulator';
 import { formatCurrencyFull, formatCurrency } from '@/lib/finance';
 import ChartPanel from './ChartPanel';
-import Logo from './Logo';
 
 interface MobileResultsViewProps {
   state: SimulatorState;
@@ -110,14 +109,11 @@ export default function MobileResultsView({
   }
 
   return (
-    <div className="flex flex-col" style={{ height: '100dvh' }}>
+    <div className="flex flex-col" style={{ height: 'calc(100dvh - 64px)' }}>
 
       {/* ── Top bar ── */}
-      <div
-        className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10"
-        style={{ paddingTop: 'env(safe-area-inset-top)' }}
-      >
-        <div className="flex items-center justify-between px-4" style={{ height: '56px' }}>
+      <div className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10">
+        <div className="flex items-center px-4" style={{ height: '48px' }}>
           <button
             onClick={onBack}
             className="flex items-center gap-1.5 text-[#888] hover:text-[#111] transition-colors"
@@ -127,9 +123,6 @@ export default function MobileResultsView({
             </svg>
             <span className="text-[13px]">Back</span>
           </button>
-          <Logo size={26} />
-          {/* Spacer to balance back button and keep logo visually centered */}
-          <div style={{ width: '48px' }} />
         </div>
       </div>
 

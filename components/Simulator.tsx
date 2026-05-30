@@ -11,7 +11,6 @@ import {
 import { futureValue, formatCurrencyFull, easeOutQuart } from '@/lib/finance';
 import ChartPanel from './ChartPanel';
 import StepFlow from './StepFlow';
-import Logo from './Logo';
 import MobileResultsView from './MobileResultsView';
 import EarlyEmailCapture from './EarlyEmailCapture';
 
@@ -114,15 +113,11 @@ export default function Simulator() {
 
         {/* Steps 1–6 and 8: top bar + full-screen step flow */}
         {step !== 7 && (
-          <div className="flex flex-col" style={{ height: '100dvh' }}>
+          <div className="flex flex-col" style={{ height: 'calc(100dvh - 64px)' }}>
 
-            {/* Sticky top bar */}
-            <div
-              className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10"
-              style={{ paddingTop: 'env(safe-area-inset-top)' }}
-            >
-              <div className="flex items-center justify-between px-4" style={{ height: '56px' }}>
-                <Logo size={26} />
+            {/* Slim projection bar */}
+            <div className="flex-shrink-0 bg-white border-b border-[#f3f4f6] z-10">
+              <div className="flex items-center justify-end px-4" style={{ height: '48px' }}>
                 <button
                   onClick={() => setChartSheetOpen(true)}
                   className="flex items-center gap-2 pl-3 pr-3.5 py-1.5 rounded-full bg-[#f3f4f6] active:bg-[#e5e7eb] transition-colors"
@@ -198,42 +193,30 @@ export default function Simulator() {
       </div>
 
       {/* ─────────────── DESKTOP ─────────────── */}
-      <div className="hidden lg:flex flex-col min-h-screen">
-
-        {/* Top header bar */}
+      <div className="hidden lg:flex" style={{ height: 'calc(100vh - 64px)' }}>
+        {/* Left panel — chart */}
         <div
-          className="flex-shrink-0 bg-white border-b border-[#f3f4f6] px-12 xl:px-16 flex items-center z-10"
-          style={{ height: '64px' }}
+          className="flex-1 border-r border-[#f3f4f6] overflow-y-auto flex flex-col"
+          style={{ position: 'sticky', top: '64px', height: 'calc(100vh - 64px)' }}
         >
-          <Logo size={30} />
+          <div className="my-auto max-w-[520px] mx-auto w-full px-12 xl:px-16 py-8">
+            <ChartPanel state={state} currentStep={step} chartHeight="220px" insightMinStep={7} />
+          </div>
         </div>
 
-        {/* Two-column content */}
-        <div className="flex flex-1">
-          {/* Left panel — chart */}
-          <div
-            className="flex-1 border-r border-[#f3f4f6] overflow-y-auto flex flex-col"
-            style={{ position: 'sticky', top: '64px', height: 'calc(100vh - 64px)' }}
-          >
-            <div className="my-auto max-w-[520px] mx-auto w-full px-12 xl:px-16 py-8">
-              <ChartPanel state={state} currentStep={step} chartHeight="220px" insightMinStep={7} />
-            </div>
-          </div>
-
-          {/* Right panel — steps */}
-          <div
-            className="w-[480px] xl:w-[520px] flex-shrink-0 overflow-y-auto flex flex-col"
-            style={{ height: 'calc(100vh - 64px)' }}
-          >
-            <div className="my-auto max-w-[380px] mx-auto w-full px-12 xl:px-16 py-6">
-              <StepFlow
-                state={state}
-                currentStep={step}
-                onUpdate={handleUpdate}
-                onNext={handleNext}
-                onBack={handleBack}
-              />
-            </div>
+        {/* Right panel — steps */}
+        <div
+          className="w-[480px] xl:w-[520px] flex-shrink-0 overflow-y-auto flex flex-col"
+          style={{ height: 'calc(100vh - 64px)' }}
+        >
+          <div className="my-auto max-w-[380px] mx-auto w-full px-12 xl:px-16 py-6">
+            <StepFlow
+              state={state}
+              currentStep={step}
+              onUpdate={handleUpdate}
+              onNext={handleNext}
+              onBack={handleBack}
+            />
           </div>
         </div>
       </div>
