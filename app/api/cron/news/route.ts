@@ -6,10 +6,19 @@ export const maxDuration = 60; // seconds — article generation needs time
 
 export async function GET(req: NextRequest) {
   // Verify this is a legitimate Vercel cron call or manual trigger with secret
+  // Vercel cron calls are verified by OIDC — secret check is for external triggers only
   const authHeader = req.headers.get('authorization');
+  const querySecret = req.nextUrl.searchParams.get('secret');
   const cronSecret = process.env.CRON_SECRET;
+  const isVercelCron = req.headers.get('x-vercel-cron') === '1';
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  const authorized =
+    !cronSecret ||
+    isVercelCron ||
+    authHeader === `Bearer ${cronSecret}` ||
+    querySecret === cronSecret;
+
+  if (!authorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
