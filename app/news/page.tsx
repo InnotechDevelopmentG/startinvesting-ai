@@ -9,7 +9,7 @@ export const fetchCache = 'force-no-store';
 export const metadata: Metadata = {
   title: 'Investing News & Market Updates — startinvesting.ai',
   description:
-    'Daily stock market updates, S&P 500 news, and investing insights written for everyday investors. No jargon, no fluff — just what matters.',
+    'Stock market updates, S&P 500 news, and investing insights — updated 5× daily. Written for everyday investors. No jargon, no fluff.',
   alternates: { canonical: 'https://startinvesting.ai/news' },
   openGraph: {
     title: 'Investing News & Market Updates — startinvesting.ai',
@@ -61,7 +61,7 @@ export default async function NewsPage() {
           What's moving the market
         </h1>
         <p className="text-[16px] text-[#888] mt-3">
-          Updated 3× daily — 3am, 9am, and 3pm PST. No jargon, no noise.
+          Updated 5× daily. No jargon, no noise.
         </p>
       </div>
 
@@ -73,7 +73,7 @@ export default async function NewsPage() {
             </svg>
           </div>
           <p className="text-[15px] font-medium text-[#111]">First update coming soon</p>
-          <p className="text-[14px] text-[#888]">Articles publish automatically at 3am, 9am, and 3pm PST.</p>
+          <p className="text-[14px] text-[#888]">Articles publish automatically 5× daily.</p>
         </div>
       ) : (
         <>

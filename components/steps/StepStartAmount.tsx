@@ -60,7 +60,7 @@ export default function StepStartAmount({ state, onUpdate, onNext }: StepStartAm
           <span className="text-[32px] font-medium text-[#888] mr-2">$</span>
           <input
             type="text"
-            inputMode="decimal"
+            inputMode="numeric"
             value={inputVal}
             onChange={(e) => handleChange(e.target.value)}
             onKeyDown={handleKeyDown}

@@ -79,7 +79,7 @@ export default function ArticleSubscribe({ position }: { position: 'top' | 'bott
             disabled={loading || !valid}
             className="px-4 py-2.5 rounded-xl text-[13px] font-semibold bg-[#00C896] text-white hover:bg-[#00b386] disabled:bg-[#e5e7eb] disabled:text-[#aaa] disabled:cursor-not-allowed transition-colors whitespace-nowrap flex-shrink-0"
           >
-            {loading ? '…' : 'Subscribe →'}
+            {loading ? 'Subscribing…' : 'Subscribe →'}
           </button>
         </div>
       </div>
