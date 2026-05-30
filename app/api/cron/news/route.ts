@@ -5,7 +5,20 @@ import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 export const maxDuration = 60; // seconds — article generation needs time
 
 export async function GET(req: NextRequest) {
-  // Auth disabled for testing — re-enable after first article confirmed working
+  const cronSecret = process.env.CRON_SECRET;
+  const isVercelCron = req.headers.get('x-vercel-cron') === '1';
+  const authHeader = req.headers.get('authorization');
+  const querySecret = req.nextUrl.searchParams.get('secret');
+
+  const authorized =
+    !cronSecret ||
+    isVercelCron ||
+    authHeader === `Bearer ${cronSecret}` ||
+    querySecret === cronSecret;
+
+  if (!authorized) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     console.log('[news-cron] Starting article generation...');

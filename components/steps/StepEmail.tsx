@@ -23,34 +23,31 @@ export default function StepEmail({ state, onNext }: StepEmailProps) {
   const projectedFormatted = formatCurrencyFull(state.projectedValue);
   const valid = isValidEmail(email);
 
-  // Auto-submit if email was captured earlier
+  // Auto-submit if email was captured earlier — snapshot state at mount, runs once only
   useEffect(() => {
     const stored = localStorage.getItem('early_capture_email');
     if (!stored || !isValidEmail(stored)) return;
+    const snapshot = {
+      email: stored,
+      age: state.age,
+      startingAmount: state.startingAmount,
+      frequency: state.frequency,
+      contributionAmount: state.contributionAmount,
+      years: state.years,
+      riskProfile: state.riskProfile,
+      projectedValue: state.projectedValue,
+      savingsBenchmark: state.savingsBenchmark,
+    };
     setLoading(true);
     fetch('/api/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: stored,
-        age: state.age,
-        startingAmount: state.startingAmount,
-        frequency: state.frequency,
-        contributionAmount: state.contributionAmount,
-        years: state.years,
-        riskProfile: state.riskProfile,
-        projectedValue: state.projectedValue,
-        savingsBenchmark: state.savingsBenchmark,
-      }),
+      body: JSON.stringify(snapshot),
     })
       .then(() => setSuccess(true))
-      .catch(() => {
-        // Fall back to normal form
-        setEmail(stored);
-      })
+      .catch(() => setEmail(stored))
       .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSubmit() {
     if (!valid) { setError('Please enter a valid email address.'); return; }
