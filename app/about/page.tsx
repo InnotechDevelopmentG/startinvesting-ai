@@ -1,3 +1,5 @@
+import ArticleSubscribe from '@/components/ArticleSubscribe';
+
 export default function AboutPage() {
   return (
     <div className="max-w-[680px] mx-auto px-6 py-16">
@@ -11,10 +13,13 @@ export default function AboutPage() {
       <p className="text-[17px] text-[#555] leading-relaxed mb-4">
         We believe anyone can build wealth. You don't need a financial advisor, a large salary, or a finance degree. You just need to start — even small, even imperfect.
       </p>
-      <p className="text-[17px] text-[#555] leading-relaxed">
+      <p className="text-[17px] text-[#555] leading-relaxed mb-10">
         Our simulator is guided, personalized, and takes less than two minutes. No sign-up required to see your numbers.
       </p>
-      <div className="mt-10">
+
+      <ArticleSubscribe position="top" />
+
+      <div className="mt-6">
         <a
           href="/"
           className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-[15px] font-medium bg-[#00C896] text-white hover:bg-[#00b386] transition-colors"

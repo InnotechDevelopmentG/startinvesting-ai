@@ -44,7 +44,10 @@
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} — SSL: %{ssl_verify_result}\" --max-time 15 https://startinvesting.ai)",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" --max-time 15 http://startinvesting.ai)",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" --max-time 15 --resolve \"startinvesting.ai:443:76.76.21.21\" https://startinvesting.ai)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --resolve \"startinvesting.ai:443:76.76.21.21\" https://startinvesting.ai --max-time 10)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --resolve \"startinvesting.ai:443:76.76.21.21\" https://startinvesting.ai --max-time 10)",
+      "Bash(ls /Users/griffenaddie/SWIH/supabase*)",
+      "Bash(~/.nvm/versions/node/v20.20.2/bin/node_modules/.bin/tsc --noEmit)",
+      "Bash(~/.nvm/versions/node/v20.20.2/bin/npx tsc:*)"
     ]
   }
 }

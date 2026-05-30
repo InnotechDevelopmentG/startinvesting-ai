@@ -6,8 +6,9 @@ import { usePathname } from 'next/navigation';
 import Logo from './Logo';
 
 const NAV_LINKS = [
-  { label: 'About', href: '/about' },
+  { label: 'Investment Simulator', href: '/' },
   { label: 'News', href: '/news' },
+  { label: 'About', href: '/about' },
 ];
 
 export default function SiteHeader() {
