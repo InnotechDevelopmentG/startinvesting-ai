@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, KeyboardEvent, useRef, useEffect } from 'react';
+import { useState, KeyboardEvent, useRef, useEffect, useCallback } from 'react';
 import { SimulatorState, FREQUENCY_PER_YEAR, RISK_LABELS, RISK_RATES } from '@/types/simulator';
 import { formatCurrencyFull, formatCurrency } from '@/lib/finance';
 import ChartPanel from './ChartPanel';
@@ -48,9 +48,15 @@ export default function MobileResultsView({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [earlyEmail, setEarlyEmail] = useState<string | null>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
   const touchStartY = useRef(0);
   const [sheetDragY, setSheetDragY] = useState(0);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('early_capture_email');
+    if (stored && isValidEmail(stored)) setEarlyEmail(stored);
+  }, []);
 
   const retirementAge = state.age > 0 ? Math.max(state.age + state.years, 65) : 65;
   const projectedFormatted = formatCurrencyFull(state.projectedValue);
@@ -205,10 +211,22 @@ export default function MobileResultsView({
         style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
       >
         <button
-          onClick={() => setSheetOpen(true)}
-          className="w-full py-4 rounded-xl text-[15px] font-medium bg-[#00C896] text-white hover:bg-[#00b386] transition-colors active:scale-[0.98]"
+          onClick={async () => {
+            if (earlyEmail) {
+              setLoading(true);
+              try {
+                await submitEmail(earlyEmail, state);
+              } catch { /* ignore — plan still sent */ }
+              setLoading(false);
+              onNext();
+            } else {
+              setSheetOpen(true);
+            }
+          }}
+          disabled={loading}
+          className="w-full py-4 rounded-xl text-[15px] font-medium bg-[#00C896] text-white hover:bg-[#00b386] transition-colors active:scale-[0.98] disabled:opacity-70"
         >
-          Show me how to get there →
+          {loading ? 'Sending your plan…' : 'Show me how to get there →'}
         </button>
         <button
           onClick={onNext}

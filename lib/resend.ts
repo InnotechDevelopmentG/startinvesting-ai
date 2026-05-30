@@ -45,6 +45,50 @@ function riskLabel(profile: string): string {
   return map[profile] ?? profile;
 }
 
+export async function sendEarlyWelcomeEmail(email: string): Promise<void> {
+  const resend = getResendClient();
+  await resend.emails.send({
+    from: 'hello@startinvesting.ai',
+    to: email,
+    subject: "You're in — finish your plan to see your numbers",
+    html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f0f0;">
+  <tr><td align="center" style="padding:32px 16px;">
+    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;">
+      <tr><td style="background-color:#111111;padding:18px 28px;">
+        <span style="font-size:12px;font-weight:700;color:#00C896;letter-spacing:0.14em;text-transform:uppercase;">startinvesting.ai</span>
+      </td></tr>
+      <tr><td style="padding:32px 28px;">
+        <p style="margin:0 0 16px 0;font-size:22px;font-weight:700;color:#111111;line-height:1.3;">You're in! 🎉</p>
+        <p style="margin:0 0 14px 0;font-size:15px;color:#444444;line-height:1.6;">
+          We've got your email. Now finish building your plan — it takes 2 more minutes and you'll see exactly how much your money could grow.
+        </p>
+        <p style="margin:0 0 24px 0;font-size:15px;color:#444444;line-height:1.6;">
+          Once you complete the simulator, we'll send you your <strong style="color:#111;">personalized investing plan</strong> with your exact numbers and step-by-step next steps.
+        </p>
+        <table cellpadding="0" cellspacing="0">
+          <tr><td style="background-color:#00C896;border-radius:8px;">
+            <a href="https://startinvesting.ai" style="display:inline-block;padding:13px 24px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">Finish my plan &#8594;</a>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:0 28px 24px 28px;">
+        <p style="margin:0;font-size:11px;color:#cccccc;line-height:1.6;">
+          You signed up at startinvesting.ai &middot; Educational purposes only &middot; Not financial advice.
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`.trim(),
+  });
+}
+
 export async function sendWelcomeEmail({
   email,
   age,

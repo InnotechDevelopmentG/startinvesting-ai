@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, KeyboardEvent } from 'react';
+import { useState, useEffect, KeyboardEvent } from 'react';
 import { SimulatorState } from '@/types/simulator';
 import { formatCurrencyFull } from '@/lib/finance';
 
@@ -22,6 +22,35 @@ export default function StepEmail({ state, onNext }: StepEmailProps) {
   const retirementAge = state.age > 0 ? Math.max(state.age + state.years, 65) : 65;
   const projectedFormatted = formatCurrencyFull(state.projectedValue);
   const valid = isValidEmail(email);
+
+  // Auto-submit if email was captured earlier
+  useEffect(() => {
+    const stored = localStorage.getItem('early_capture_email');
+    if (!stored || !isValidEmail(stored)) return;
+    setLoading(true);
+    fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: stored,
+        age: state.age,
+        startingAmount: state.startingAmount,
+        frequency: state.frequency,
+        contributionAmount: state.contributionAmount,
+        years: state.years,
+        riskProfile: state.riskProfile,
+        projectedValue: state.projectedValue,
+        savingsBenchmark: state.savingsBenchmark,
+      }),
+    })
+      .then(() => setSuccess(true))
+      .catch(() => {
+        // Fall back to normal form
+        setEmail(stored);
+      })
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSubmit() {
     if (!valid) { setError('Please enter a valid email address.'); return; }

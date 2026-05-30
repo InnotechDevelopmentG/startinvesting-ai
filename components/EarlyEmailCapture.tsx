@@ -49,6 +49,7 @@ export default function EarlyEmailCapture({ age, onDismiss }: EarlyEmailCaptureP
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, age }),
       });
+      localStorage.setItem('early_capture_email', email);
       setSuccess(true);
       setTimeout(() => {
         setVisible(false);

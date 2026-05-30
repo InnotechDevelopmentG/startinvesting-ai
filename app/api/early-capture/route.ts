@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/supabase';
+import { sendEarlyWelcomeEmail } from '@/lib/resend';
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
@@ -40,6 +41,12 @@ export async function POST(req: NextRequest) {
       projected_value: null,
       savings_benchmark: null,
     });
+
+    try {
+      await sendEarlyWelcomeEmail(email);
+    } catch (emailErr) {
+      console.error('Early capture email error:', emailErr);
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {
