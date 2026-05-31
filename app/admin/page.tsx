@@ -16,11 +16,12 @@ export default async function AdminPage() {
       .select('id, email, created_at')
       .order('created_at', { ascending: false }),
     // Active: not dismissed, not addressed — newest first
+    // Use 'or' to handle both false and null values
     supabase
       .from('reddit_opportunities')
       .select('*')
-      .neq('dismissed', true)
-      .neq('addressed', true)
+      .or('dismissed.is.null,dismissed.eq.false')
+      .or('addressed.is.null,addressed.eq.false')
       .order('created_at', { ascending: false })
       .limit(50),
     // Completed: addressed
