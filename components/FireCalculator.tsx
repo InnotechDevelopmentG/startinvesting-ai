@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { calculateFIRE, fmtFireFull, fmtFireShort, FireInputs } from '@/lib/fire';
+import EmailCaptureModal from './EmailCaptureModal';
 
 const WR_OPTIONS = [3, 3.5, 4, 5] as const;
 
@@ -77,6 +78,22 @@ export default function FireCalculator() {
   const [returnStr,   setReturnStr]   = useState(String(DEFAULTS.annualReturn));
   const [inflStr,     setInflStr]     = useState(String(DEFAULTS.inflationRate));
   const [showProjection, setShowProjection] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const touchedFields = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('early_capture_email')) return;
+    // already shown check
+  }, []);
+
+  function trackField(name: string) {
+    if (typeof window !== 'undefined' && localStorage.getItem('early_capture_email')) return;
+    if (showModal) return;
+    touchedFields.current.add(name);
+    if (touchedFields.current.size >= 2) {
+      setShowModal(true);
+    }
+  }
 
   function patch(p: Partial<FireInputs>) {
     setInputs(prev => ({ ...prev, ...p }));
@@ -86,31 +103,37 @@ export default function FireCalculator() {
     const d = v.replace(/[^0-9]/g, '');
     setAgeStr(d);
     patch({ currentAge: parseInt(d) || 0 });
+    trackField('age');
   }
   function onSavings(v: string) {
     const d = v.replace(/[^0-9]/g, '');
     setSavingsStr(d ? parseInt(d).toLocaleString() : '');
     patch({ currentSavings: parseInt(d) || 0 });
+    trackField('savings');
   }
   function onContrib(v: string) {
     const d = v.replace(/[^0-9]/g, '');
     setContribStr(d ? parseInt(d).toLocaleString() : '');
     patch({ monthlyContribution: parseInt(d) || 0 });
+    trackField('contrib');
   }
   function onSpending(v: string) {
     const d = v.replace(/[^0-9]/g, '');
     setSpendingStr(d ? parseInt(d).toLocaleString() : '');
     patch({ annualSpending: parseInt(d) || 0 });
+    trackField('spending');
   }
   function onReturn(v: string) {
     const c = v.replace(/[^0-9.]/g, '');
     setReturnStr(c);
     patch({ annualReturn: parseFloat(c) || 0 });
+    trackField('return');
   }
   function onInfl(v: string) {
     const c = v.replace(/[^0-9.]/g, '');
     setInflStr(c);
     patch({ inflationRate: parseFloat(c) || 0 });
+    trackField('infl');
   }
 
   const result = useMemo(() => calculateFIRE(inputs), [inputs]);
@@ -140,6 +163,14 @@ export default function FireCalculator() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-10">
+
+      {showModal && (
+        <EmailCaptureModal
+          source="fire"
+          age={inputs.currentAge || undefined}
+          onClose={() => setShowModal(false)}
+        />
+      )}
 
       {/* Header */}
       <div className="mb-8">

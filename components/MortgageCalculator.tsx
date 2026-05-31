@@ -8,6 +8,7 @@ import {
   shortDollar,
   MortgageInputs,
 } from '@/lib/mortgage';
+import EmailCaptureModal from './EmailCaptureModal';
 
 const TERM_OPTIONS = [10, 15, 20, 25, 30];
 
@@ -121,6 +122,8 @@ export default function MortgageCalculator() {
   const [inputs, setInputs] = useState<MortgageInputs>(DEFAULTS);
   const [showAmortization, setShowAmortization] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const touchedFields = useRef(new Set<string>());
 
   // String states for controlled inputs
   const [homePriceStr, setHomePriceStr] = useState(fmtInt(DEFAULTS.homePrice));
@@ -134,6 +137,13 @@ export default function MortgageCalculator() {
   const [extraStr, setExtraStr] = useState('');
 
   const isUpdating = useRef(false);
+
+  function trackField(name: string) {
+    if (typeof window !== 'undefined' && localStorage.getItem('early_capture_email')) return;
+    if (showModal) return;
+    touchedFields.current.add(name);
+    if (touchedFields.current.size >= 2) setShowModal(true);
+  }
 
   function updateInputs(patch: Partial<MortgageInputs>) {
     setInputs(prev => ({ ...prev, ...patch }));
@@ -152,6 +162,7 @@ export default function MortgageCalculator() {
       updateInputs({ homePrice: hp, downPayment: newDp });
       isUpdating.current = false;
     }
+    trackField('homePrice');
   }
 
   function onDpDollarChange(v: string) {
@@ -162,6 +173,7 @@ export default function MortgageCalculator() {
     const pct = hp > 0 ? (dp / hp) * 100 : 0;
     setDpPercentStr(pct > 0 ? pct.toFixed(3) : '');
     updateInputs({ downPayment: dp });
+    trackField('downPayment');
   }
 
   function onDpPercentChange(v: string) {
@@ -171,12 +183,14 @@ export default function MortgageCalculator() {
     const dp = Math.round((pct / 100) * inputs.homePrice);
     setDpDollarStr(dp > 0 ? dp.toLocaleString() : '');
     updateInputs({ downPayment: dp });
+    trackField('downPayment');
   }
 
   function onRateChange(v: string) {
     const clean = v.replace(/[^0-9.]/g, '');
     setRateStr(clean);
     updateInputs({ annualRate: parseFloat(clean) || 0 });
+    trackField('rate');
   }
 
   function onTaxChange(v: string) {
@@ -238,6 +252,13 @@ export default function MortgageCalculator() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-10">
+
+      {showModal && (
+        <EmailCaptureModal
+          source="mortgage"
+          onClose={() => setShowModal(false)}
+        />
+      )}
 
       {/* Page header */}
       <div className="mb-8">
