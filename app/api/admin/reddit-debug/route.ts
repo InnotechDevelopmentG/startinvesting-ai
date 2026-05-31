@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 
 async function isAdminAuthed(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get('admin_session')?.value;
@@ -12,55 +13,34 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const results: Record<string, unknown> = {};
+  const supabase = getSupabaseAdminClient();
 
-  // Test 1: RSS feed
-  try {
-    const r = await fetch(
-      'https://www.reddit.com/r/personalfinance/search.rss?q=invest&restrict_sr=on&sort=new&t=week',
-      { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; startinvesting.ai)' } }
-    );
-    const text = await r.text();
-    results.rss = { status: r.status, bodyPreview: text.slice(0, 300), itemCount: (text.match(/<item>/g) ?? []).length };
-  } catch (e) {
-    results.rss = { error: String(e) };
-  }
+  const [a, b, c, d] = await Promise.all([
+    // What the active query actually returns
+    supabase.from('reddit_opportunities').select('id,title,dismissed,addressed')
+      .or('dismissed.is.null,dismissed.eq.false')
+      .or('addressed.is.null,addressed.eq.false')
+      .order('created_at', { ascending: false }).limit(20),
 
-  // Test 2: JSON API (no auth)
-  try {
-    const r = await fetch(
-      'https://www.reddit.com/r/personalfinance/new.json?limit=3',
-      { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; startinvesting.ai)' } }
-    );
-    const text = await r.text();
-    results.jsonApi = { status: r.status, bodyPreview: text.slice(0, 300) };
-  } catch (e) {
-    results.jsonApi = { error: String(e) };
-  }
+    // All rows raw
+    supabase.from('reddit_opportunities').select('id,title,dismissed,addressed')
+      .order('created_at', { ascending: false }).limit(20),
 
-  // Test 3: OAuth (if creds present)
-  const clientId = process.env.REDDIT_CLIENT_ID;
-  const clientSecret = process.env.REDDIT_CLIENT_SECRET;
-  if (clientId && clientSecret) {
-    try {
-      const creds = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-      const r = await fetch('https://www.reddit.com/api/v1/access_token', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${creds}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'startinvesting.ai/1.0 by startinvesting_bot',
-        },
-        body: 'grant_type=client_credentials',
-      });
-      const data = await r.json();
-      results.oauth = { status: r.status, response: data };
-    } catch (e) {
-      results.oauth = { error: String(e) };
-    }
-  } else {
-    results.oauth = { skipped: 'No REDDIT_CLIENT_ID/SECRET env vars set' };
-  }
+    // Count by dismissed/addressed
+    supabase.from('reddit_opportunities').select('dismissed,addressed'),
 
-  return NextResponse.json(results, { status: 200 });
+    // Test a simple eq query
+    supabase.from('reddit_opportunities').select('id,title').eq('dismissed', false).eq('addressed', false).limit(5),
+  ]);
+
+  return NextResponse.json({
+    activeQuery: { count: a.data?.length, error: a.error, rows: a.data },
+    allRaw: { count: b.data?.length, error: b.error, rows: b.data },
+    simpleEq: { count: d.data?.length, error: d.error, rows: d.data },
+    breakdown: c.data?.reduce((acc, r) => {
+      const key = `dismissed=${r.dismissed},addressed=${r.addressed}`;
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>),
+  });
 }
