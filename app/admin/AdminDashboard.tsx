@@ -172,26 +172,31 @@ export default function AdminDashboard({
         body: JSON.stringify({ id }),
       });
       if (!res.ok) {
-        const body = await res.text();
-        console.error('[dismiss] failed:', res.status, body);
-        // Rollback optimistic update so user knows it failed
         setDismissed(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
       } else {
-        window.location.reload();
+        router.refresh();
       }
-    } catch (err) {
-      console.error('[dismiss] error:', err);
+    } catch {
+      setDismissed(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
     }
   }
 
-  function handleAddress(id: string) {
+  async function handleAddress(id: string) {
     setAddressedIds(prev => { const next = new Set(Array.from(prev)); next.add(id); return next; });
-    fetch('/api/admin/reddit-address', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-      keepalive: true, // survives tab navigation
-    }).catch(() => {});
+    try {
+      const res = await fetch('/api/admin/reddit-address', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        setAddressedIds(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+      } else {
+        router.refresh();
+      }
+    } catch {
+      setAddressedIds(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+    }
   }
 
   async function handleCopy(id: string, text: string) {
@@ -213,7 +218,7 @@ export default function AdminDashboard({
         const unique = data.unique ?? fetched;
         setScanResult(`Fetched ${fetched} posts · ${unique} unique · added ${data.inserted} new opportunit${data.inserted !== 1 ? 'ies' : 'y'}`);
         if ((data.inserted ?? 0) > 0) {
-          window.location.reload();
+          router.refresh();
         }
       }
     } catch {

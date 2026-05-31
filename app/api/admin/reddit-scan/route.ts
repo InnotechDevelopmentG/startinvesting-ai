@@ -3,6 +3,8 @@ import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { getAllRedditOpportunities, RedditPost } from '@/lib/reddit';
 import Anthropic from '@anthropic-ai/sdk';
 
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
 export const maxDuration = 60;
 
 async function isAdminAuthed(req: NextRequest): Promise<boolean> {
@@ -31,7 +33,6 @@ function scorePost(post: RedditPost): number {
 }
 
 async function draftReply(post: RedditPost): Promise<string> {
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const body = post.selftext.slice(0, 600) || '(no body)';
 
   const prompt = `You're helping Griffen respond to a Reddit post. He built startinvesting.ai — a free investment simulator (no sign-up) that shows projected portfolio value based on age, contributions, timeline, and risk profile. It also has a mortgage calculator at startinvesting.ai/mortgage.
@@ -84,22 +85,25 @@ export async function POST(req: NextRequest) {
       .sort((a, b) => b.score - a.score)
       .slice(0, 10);
 
-    let inserted = 0;
-    for (const { post } of top) {
-      const drafted_reply = await draftReply(post);
-      await new Promise(r => setTimeout(r, 300));
+    // Draft all replies in parallel
+    const replies = await Promise.all(top.map(({ post }) => draftReply(post)));
 
-      const { error } = await supabase.from('reddit_opportunities').insert({
-        post_id: post.id,
-        subreddit: post.subreddit,
-        title: post.title,
-        url: `https://reddit.com${post.permalink}`,
-        body_snippet: post.selftext.slice(0, 400),
-        drafted_reply,
-      });
+    // Batch insert
+    const rows = top.map(({ post }, i) => ({
+      post_id: post.id,
+      subreddit: post.subreddit,
+      title: post.title,
+      url: `https://reddit.com${post.permalink}`,
+      body_snippet: post.selftext.slice(0, 400),
+      drafted_reply: replies[i],
+    }));
 
-      if (!error) inserted++;
-    }
+    const { error: insertError, data: insertedRows } = await supabase
+      .from('reddit_opportunities')
+      .insert(rows)
+      .select('id');
+
+    const inserted = insertedRows?.length ?? (insertError ? 0 : rows.length);
 
     return NextResponse.json({
       success: true,
