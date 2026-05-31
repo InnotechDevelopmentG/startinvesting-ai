@@ -34,6 +34,7 @@ export default function StepFlow({
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const [animKey, setAnimKey] = useState(0);
   const prevStep = useRef(currentStep);
+  const overflowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (currentStep !== prevStep.current) {
@@ -42,6 +43,11 @@ export default function StepFlow({
       prevStep.current = currentStep;
     }
   }, [currentStep]);
+
+  // Reset scrollLeft that browsers auto-set when translateX animation overflows
+  useEffect(() => {
+    if (overflowRef.current) overflowRef.current.scrollLeft = 0;
+  }, [animKey]);
 
   const animClass =
     direction === 'forward' ? 'animate-slide-in-right' : 'animate-slide-in-left';
@@ -121,7 +127,7 @@ export default function StepFlow({
       </div>
 
       {/* Step content with slide animation */}
-      <div className="overflow-hidden">
+      <div ref={overflowRef} className="overflow-hidden">
         <div key={animKey} className={animClass}>
           {renderStep()}
         </div>

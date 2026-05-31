@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, KeyboardEvent } from 'react';
-import { SimulatorState, FREQUENCY_LABELS, FREQUENCY_PER_YEAR } from '@/types/simulator';
+import { SimulatorState, FREQUENCY_PER_YEAR } from '@/types/simulator';
 
 interface StepContributionProps {
   state: SimulatorState;
@@ -53,7 +53,7 @@ export default function StepContribution({ state, onUpdate, onNext }: StepContri
           Step 4 of 6
         </p>
         <h2 className="text-[28px] font-medium text-[#111] leading-tight tracking-tight">
-          How much will you invest every {FREQUENCY_LABELS[state.frequency].toLowerCase().replace('bi-weekly', 'two weeks')}?
+          How much will you invest every {{ weekly: 'week', biweekly: 'two weeks', monthly: 'month' }[state.frequency]}?
         </h2>
         <p className="mt-2 text-[15px] text-[#888]">
           Even small amounts grow significantly over time.

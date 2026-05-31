@@ -479,8 +479,8 @@ export default function MortgageCalculator() {
           <div className="bg-white border border-[#f3f4f6] rounded-2xl p-6">
             <p className="text-[12px] font-semibold uppercase tracking-widest text-[#aaa] mb-4">Payment Breakdown</p>
 
-            <div className="flex items-center gap-6">
-              <div className="flex-shrink-0 w-[140px]">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+              <div className="flex-shrink-0 w-[140px] mx-auto sm:mx-0">
                 <DonutChart
                   segments={segments}
                   centerLabel="monthly"
@@ -492,7 +492,7 @@ export default function MortgageCalculator() {
                   <div key={seg.label} className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: seg.color }} />
-                      <span className="text-[12px] text-[#666] truncate">{seg.label}</span>
+                      <span className="text-[12px] text-[#666]">{seg.label}</span>
                     </div>
                     <span className="text-[13px] font-medium text-[#111] flex-shrink-0">
                       {formatMortgageDollar(seg.value)}/mo
