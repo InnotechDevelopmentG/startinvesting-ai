@@ -18,7 +18,7 @@ export default async function AdminPage() {
     supabase
       .from('reddit_opportunities')
       .select('*')
-      .eq('dismissed', false)
+      .neq('dismissed', true)
       .order('created_at', { ascending: false })
       .limit(30),
   ]);
