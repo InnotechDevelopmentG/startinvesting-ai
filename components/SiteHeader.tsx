@@ -7,6 +7,7 @@ import Logo from './Logo';
 
 const NAV_LINKS = [
   { label: 'Investment Simulator', href: '/' },
+  { label: 'Mortgage Calculator', href: '/mortgage' },
   { label: 'News', href: '/news' },
   { label: 'About', href: '/about' },
 ];
