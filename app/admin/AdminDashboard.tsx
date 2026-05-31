@@ -200,7 +200,9 @@ export default function AdminDashboard({
         const fetched = data.fetched ?? data.found ?? 0;
         const unique = data.unique ?? fetched;
         setScanResult(`Fetched ${fetched} posts · ${unique} unique · added ${data.inserted} new opportunit${data.inserted !== 1 ? 'ies' : 'y'}`);
-        router.refresh();
+        if ((data.inserted ?? 0) > 0) {
+          window.location.reload();
+        }
       }
     } catch {
       setScanResult('Error: could not reach scan endpoint');
