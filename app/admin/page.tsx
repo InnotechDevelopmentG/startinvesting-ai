@@ -25,14 +25,14 @@ export default async function AdminPage() {
       .or('dismissed.is.null,dismissed.eq.false')
       .or('addressed.is.null,addressed.eq.false')
       .order('created_at', { ascending: false })
-      .limit(50),
+      .limit(200),
     // Completed: addressed=true OR dismissed=true
     supabase
       .from('reddit_opportunities')
       .select('*')
       .or('addressed.eq.true,dismissed.eq.true')
       .order('created_at', { ascending: false })
-      .limit(20),
+      .limit(200),
   ]);
 
   return (
