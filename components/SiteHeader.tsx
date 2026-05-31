@@ -47,21 +47,17 @@ export default function SiteHeader() {
             ))}
           </nav>
 
-          {/* Desktop right — Login */}
-          <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/admin/login"
-              className="px-4 py-2 rounded-lg text-[14px] font-medium border border-[#e5e7eb] text-[#555] hover:border-[#00C896] hover:text-[#00C896] transition-colors"
-            >
-              Login
-            </Link>
-            <Link
-              href="/"
-              className="px-4 py-2 rounded-lg text-[14px] font-medium bg-[#00C896] text-white hover:bg-[#00b386] transition-colors"
-            >
-              Get started →
-            </Link>
-          </div>
+          {/* Desktop right CTA — only show when not on homepage */}
+          {pathname !== '/' && (
+            <div className="hidden md:flex items-center gap-3">
+              <Link
+                href="/"
+                className="px-4 py-2 rounded-lg text-[14px] font-medium bg-[#00C896] text-white hover:bg-[#00b386] transition-colors"
+              >
+                Try simulator →
+              </Link>
+            </div>
+          )}
 
           {/* Mobile — hamburger */}
           <button
@@ -105,22 +101,17 @@ export default function SiteHeader() {
                   {label}
                 </Link>
               ))}
-              <div className="flex gap-2 pt-2 pb-1">
-                <Link
-                  href="/admin/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 py-3 text-center rounded-xl text-[14px] font-medium border border-[#e5e7eb] text-[#555] hover:border-[#00C896] hover:text-[#00C896] transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 py-3 text-center rounded-xl text-[14px] font-medium bg-[#00C896] text-white hover:bg-[#00b386] transition-colors"
-                >
-                  Get started →
-                </Link>
-              </div>
+              {pathname !== '/' && (
+                <div className="pt-2 pb-1">
+                  <Link
+                    href="/"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block w-full py-3 text-center rounded-xl text-[14px] font-medium bg-[#00C896] text-white hover:bg-[#00b386] transition-colors"
+                  >
+                    Try simulator →
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </>
