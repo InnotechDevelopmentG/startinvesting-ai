@@ -13,10 +13,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
-    const { id } = await req.json();
+    const text = await req.text();
+    const { id } = JSON.parse(text);
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     const supabase = getSupabaseAdminClient();
-    await supabase.from('reddit_opportunities').update({ addressed: true }).eq('id', id);
+    const { error } = await supabase
+      .from('reddit_opportunities')
+      .update({ addressed: true })
+      .eq('id', id);
+    if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });

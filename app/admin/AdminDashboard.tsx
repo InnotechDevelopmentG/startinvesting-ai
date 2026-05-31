@@ -171,13 +171,12 @@ export default function AdminDashboard({
     });
   }
 
-  async function handleAddress(id: string) {
+  function handleAddress(id: string) {
+    // Update local state immediately
     setAddressedIds(prev => { const next = new Set(Array.from(prev)); next.add(id); return next; });
-    await fetch('/api/admin/reddit-address', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
+    // Use sendBeacon so the request completes even as the browser opens a new tab
+    const blob = new Blob([JSON.stringify({ id })], { type: 'application/json' });
+    navigator.sendBeacon('/api/admin/reddit-address', blob);
   }
 
   async function handleCopy(id: string, text: string) {
