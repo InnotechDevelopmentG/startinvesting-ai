@@ -34,6 +34,7 @@ interface Opportunity {
   drafted_reply: string;
   created_at: string;
   addressed?: boolean;
+  dismissed?: boolean;
 }
 
 type SortKey = keyof Submission;
@@ -147,8 +148,8 @@ export default function AdminDashboard({
   );
 
   const completedOpps = useMemo(
-    () => [...addressed, ...opportunities.filter(o => addressedIds.has(o.id))],
-    [addressed, opportunities, addressedIds]
+    () => [...addressed, ...opportunities.filter(o => addressedIds.has(o.id) || dismissed.has(o.id))],
+    [addressed, opportunities, addressedIds, dismissed]
   );
 
   function toggleSort(key: SortKey) {
@@ -522,7 +523,9 @@ export default function AdminDashboard({
                   </button>
                   {showCompleted && (
                     <div className="flex flex-col gap-3">
-                      {completedOpps.map(opp => (
+                      {completedOpps.map(opp => {
+                        const wasDismissed = dismissed.has(opp.id) || opp.dismissed;
+                        return (
                         <div key={opp.id} className="rounded-xl border border-[#f3f4f6] bg-[#fafafa] p-4 opacity-60">
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2">
@@ -530,10 +533,16 @@ export default function AdminDashboard({
                               <span className="text-[11px] text-[#bbb]">{timeAgo(opp.created_at)}</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-                                <path d="M1 5l3.5 3.5L11 1" stroke="#00C896" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                              <span className="text-[11px] text-[#00C896] font-medium">Posted</span>
+                              {wasDismissed ? (
+                                <span className="text-[11px] text-[#bbb] font-medium">Dismissed</span>
+                              ) : (
+                                <>
+                                  <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                                    <path d="M1 5l3.5 3.5L11 1" stroke="#00C896" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                  <span className="text-[11px] text-[#00C896] font-medium">Posted</span>
+                                </>
+                              )}
                             </div>
                           </div>
                           <p className="text-[13px] text-[#555] mt-2 leading-snug">{opp.title}</p>
@@ -542,7 +551,8 @@ export default function AdminDashboard({
                             View thread →
                           </a>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
