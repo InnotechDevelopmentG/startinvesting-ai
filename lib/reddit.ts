@@ -37,20 +37,20 @@ const QUERIES = [
   'site:reddit.com/r/personalfinance mortgage first home down payment',
 ];
 
+// Returns the Reddit post ID (e.g. "abc123") from a URL, or null if not a valid post URL
+function extractId(url: string): string | null {
+  const m = url.match(/\/comments\/([a-z0-9]+)/i);
+  return m ? m[1] : null;
+}
+
 function extractSubreddit(url: string): string {
   const m = url.match(/reddit\.com\/r\/([^/]+)/i);
   return m ? m[1] : '';
 }
 
-function extractId(url: string): string {
-  const m = url.match(/\/comments\/([a-z0-9]+)/i);
-  return m ? m[1] : url.slice(-10);
-}
-
 function extractPermalink(url: string): string {
   try {
-    const u = new URL(url);
-    return u.pathname;
+    return new URL(url).pathname;
   } catch {
     return url;
   }
@@ -74,35 +74,41 @@ async function serperSearch(query: string): Promise<RedditPost[]> {
   const data = await res.json() as SerperResponse;
   const results = data.organic ?? [];
 
-  return results
-    .filter(r => r.link.includes('reddit.com/r/') && r.link.includes('/comments/'))
-    .map(r => ({
-      id: extractId(r.link),
+  const posts: RedditPost[] = [];
+  for (const r of results) {
+    // Must be a proper post URL with /comments/<id>/
+    if (!r.link.includes('reddit.com/r/') || !r.link.includes('/comments/')) continue;
+    const id = extractId(r.link);
+    if (!id) continue; // skip anything without a valid post ID
+
+    posts.push({
+      id,
       subreddit: extractSubreddit(r.link),
       title: r.title.replace(/\s*:\s*reddit$/i, '').replace(/\s*-\s*Reddit$/i, '').trim(),
       selftext: r.snippet ?? '',
       permalink: extractPermalink(r.link),
       created_utc: Date.now() / 1000,
-    }));
+    });
+  }
+  return posts;
 }
 
 export async function getAllRedditOpportunities(): Promise<RedditPost[]> {
-  const all: RedditPost[] = [];
   const seen = new Set<string>();
+  const all: RedditPost[] = [];
 
   for (const query of QUERIES) {
     try {
       const posts = await serperSearch(query);
       for (const post of posts) {
-        if (!seen.has(post.id)) {
-          seen.add(post.id);
-          all.push(post);
-        }
+        // Deduplicate by post ID within this scan run
+        if (seen.has(post.id)) continue;
+        seen.add(post.id);
+        all.push(post);
       }
     } catch {
       // continue on individual query failure
     }
-    // Small pause between requests
     await new Promise(r => setTimeout(r, 300));
   }
 
