@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { sendEarlyWelcomeEmail } from '@/lib/resend';
 
 function isValidEmail(email: string): boolean {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address.' }, { status: 400 });
     }
 
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseAdminClient();
 
     // Rate limit: one submission per email per hour
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();

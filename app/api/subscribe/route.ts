@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { sendWelcomeEmail } from '@/lib/resend';
 import { formatCurrencyFull } from '@/lib/finance';
 
@@ -41,14 +41,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address.' }, { status: 400 });
     }
 
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseAdminClient();
 
-    // Rate limit: one submission per email per hour
+    // Rate limit: one *complete* submission per email per hour
+    // Only count rows with contribution_amount set — early-capture rows (null) must not block full submissions
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data: existing } = await supabase
       .from('simulator_submissions')
       .select('id')
       .eq('email', email)
+      .not('contribution_amount', 'is', null)
       .gte('created_at', oneHourAgo)
       .limit(1);
 
