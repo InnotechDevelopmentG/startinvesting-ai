@@ -93,6 +93,7 @@ export default function AdminDashboard({
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState<string | null>(null);
 
   // ── Stats ───────────────────────────────────────────────────────────────
   const now = new Date();
@@ -168,9 +169,18 @@ export default function AdminDashboard({
 
   async function handleScan() {
     setScanning(true);
+    setScanResult(null);
     try {
-      await fetch('/api/cron/reddit-monitor', { method: 'GET' });
-      router.refresh();
+      const res = await fetch('/api/admin/reddit-scan', { method: 'POST' });
+      const data = await res.json() as { success?: boolean; inserted?: number; found?: number; error?: string };
+      if (!res.ok || data.error) {
+        setScanResult(`Error: ${data.error ?? 'scan failed'}`);
+      } else {
+        setScanResult(`Found ${data.found} posts · added ${data.inserted} new opportunit${data.inserted !== 1 ? 'ies' : 'y'}`);
+        router.refresh();
+      }
+    } catch {
+      setScanResult('Error: could not reach scan endpoint');
     } finally {
       setScanning(false);
     }
@@ -275,13 +285,20 @@ export default function AdminDashboard({
                 className="px-3 py-2 text-[13px] rounded-lg border border-[#e5e7eb] focus:border-[#00C896] outline-none transition-colors w-full max-w-[240px]" />
             )}
             {tab === 'reddit' && (
-              <button
-                onClick={handleScan}
-                disabled={scanning}
-                className="px-4 py-2 text-[13px] font-medium rounded-lg bg-[#111] text-white hover:bg-[#333] disabled:opacity-50 transition-colors whitespace-nowrap"
-              >
-                {scanning ? 'Scanning…' : 'Scan Reddit now'}
-              </button>
+              <div className="flex items-center gap-3">
+                {scanResult && (
+                  <span className={`text-[12px] ${scanResult.startsWith('Error') ? 'text-red-500' : 'text-[#00C896]'}`}>
+                    {scanResult}
+                  </span>
+                )}
+                <button
+                  onClick={handleScan}
+                  disabled={scanning}
+                  className="px-4 py-2 text-[13px] font-medium rounded-lg bg-[#111] text-white hover:bg-[#333] disabled:opacity-50 transition-colors whitespace-nowrap"
+                >
+                  {scanning ? 'Scanning Reddit…' : 'Scan Reddit now'}
+                </button>
+              </div>
             )}
           </div>
 
