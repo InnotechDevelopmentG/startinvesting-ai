@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import {
   calculateMortgage,
   buildAmortizationSchedule,
@@ -9,6 +9,8 @@ import {
   MortgageInputs,
 } from '@/lib/mortgage';
 import EmailCaptureModal from './EmailCaptureModal';
+import Tooltip from './Tooltip';
+import ShareButton from './ShareButton';
 
 const TERM_OPTIONS = [10, 15, 20, 25, 30];
 
@@ -86,7 +88,7 @@ function DonutChart({ segments, centerLabel, centerValue }: {
 
 // ── Number input ─────────────────────────────────────────────────────────────
 function NumInput({
-  label, value, onChange, prefix, suffix, hint, inputMode = 'numeric', step,
+  label, value, onChange, prefix, suffix, hint, tooltip, inputMode = 'numeric', step,
 }: {
   label: string;
   value: string;
@@ -94,12 +96,16 @@ function NumInput({
   prefix?: string;
   suffix?: string;
   hint?: string;
+  tooltip?: string;
   inputMode?: 'numeric' | 'decimal';
   step?: string;
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[12px] font-medium text-[#555] uppercase tracking-wider">{label}</label>
+      <div className="flex items-center gap-1.5">
+        <label className="text-[12px] font-medium text-[#555] uppercase tracking-wider">{label}</label>
+        {tooltip && <Tooltip content={tooltip} />}
+      </div>
       <div className="flex items-center bg-[#f9fafb] border border-[#e5e7eb] rounded-xl px-3 py-2.5 focus-within:border-[#00C896] transition-colors">
         {prefix && <span className="text-[14px] text-[#aaa] mr-1.5 flex-shrink-0">{prefix}</span>}
         <input
@@ -229,6 +235,11 @@ export default function MortgageCalculator() {
     [showAmortization, inputs]
   );
 
+  const shareText = useMemo(() =>
+    `🏠 Just ran my mortgage numbers: ${formatMortgageDollar(result.totalMonthly)}/mo total payment, ${formatMortgageDollar(result.totalInterest)} in interest over ${inputs.termYears} years. Eye-opening. See yours:`,
+    [result.totalMonthly, result.totalInterest, inputs.termYears]
+  );
+
   // Donut segments
   const segments: Segment[] = [
     { label: 'Principal & Interest', value: result.monthlyPI, color: '#00C896' },
@@ -286,11 +297,15 @@ export default function MortgageCalculator() {
               value={homePriceStr}
               onChange={onHomePriceChange}
               prefix="$"
+              tooltip="The purchase price of the home. Closing costs (typically 2–5% extra) are not included here — budget for those separately."
             />
 
             {/* Down payment */}
             <div className="flex flex-col gap-1">
-              <label className="text-[12px] font-medium text-[#555] uppercase tracking-wider">Down Payment</label>
+              <div className="flex items-center gap-1.5">
+                <label className="text-[12px] font-medium text-[#555] uppercase tracking-wider">Down Payment</label>
+                <Tooltip content="More down = lower monthly payment. Hit 20% to avoid PMI, which can cost $100–300/month. Less than 20% means you're paying extra to protect the lender, not yourself." />
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center bg-[#f9fafb] border border-[#e5e7eb] rounded-xl px-3 py-2.5 focus-within:border-[#00C896] transition-colors">
                   <span className="text-[14px] text-[#aaa] mr-1.5">$</span>
@@ -335,11 +350,15 @@ export default function MortgageCalculator() {
               suffix="%"
               inputMode="decimal"
               hint="Current 30-yr national avg ~6.8%"
+              tooltip="Your Annual Percentage Rate. Even 0.5% lower saves tens of thousands over the life of the loan. Shop at least 3 lenders — rates vary more than most people realize."
             />
 
             {/* Loan term */}
             <div className="flex flex-col gap-2">
-              <label className="text-[12px] font-medium text-[#555] uppercase tracking-wider">Loan Term</label>
+              <div className="flex items-center gap-1.5">
+                <label className="text-[12px] font-medium text-[#555] uppercase tracking-wider">Loan Term</label>
+                <Tooltip content="Shorter term = higher monthly payment but dramatically less total interest. A 15-year vs 30-year loan can save $150K+ in interest on a $400K home." />
+              </div>
               <div className="flex gap-2 flex-wrap">
                 {TERM_OPTIONS.map(yr => (
                   <button
@@ -368,6 +387,7 @@ export default function MortgageCalculator() {
               onChange={onTaxChange}
               prefix="$"
               hint={`${inputs.homePrice > 0 ? ((inputs.annualPropertyTax / inputs.homePrice) * 100).toFixed(2) : '0.00'}% of home value · US avg ~1.1%`}
+              tooltip="Varies significantly by state and county. New Jersey averages ~2.2%, Hawaii ~0.3%. Check your county assessor's website or ask your realtor for a real number."
             />
 
             <NumInput
@@ -376,6 +396,7 @@ export default function MortgageCalculator() {
               onChange={onInsuranceChange}
               prefix="$"
               hint="Per year · US avg ~$1,800/yr"
+              tooltip="Required by your lender. Covers fire, theft, and liability. Varies by location, home value, and coverage level. Get multiple quotes — prices vary widely."
             />
 
             <NumInput
@@ -384,6 +405,7 @@ export default function MortgageCalculator() {
               onChange={onHoaChange}
               prefix="$"
               hint="Leave blank if no HOA"
+              tooltip="Homeowners Association fees. Common in condos and planned communities. Read the HOA docs carefully before buying — special assessments can add thousands unexpectedly."
             />
 
             {result.requiresPMI && (
@@ -394,6 +416,7 @@ export default function MortgageCalculator() {
                 suffix="%/yr"
                 inputMode="decimal"
                 hint="Typically 0.5–1.5% · Drops off when LTV reaches 80%"
+                tooltip="Private Mortgage Insurance protects the lender (not you) when your down payment is under 20%. It drops off automatically once you hit 80% LTV. The faster you build equity, the sooner it's gone."
               />
             )}
           </div>
@@ -444,6 +467,12 @@ export default function MortgageCalculator() {
               {inputs.termYears}-year fixed · {inputs.annualRate.toFixed(3)}% APR
             </p>
           </div>
+
+          {/* Share */}
+          <ShareButton
+            text={shareText}
+            url="https://startinvesting.ai/mortgage"
+          />
 
           {/* Donut + breakdown */}
           <div className="bg-white border border-[#f3f4f6] rounded-2xl p-6">

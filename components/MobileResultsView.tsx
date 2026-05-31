@@ -4,6 +4,7 @@ import { useState, KeyboardEvent, useRef, useEffect, useCallback } from 'react';
 import { SimulatorState, FREQUENCY_PER_YEAR, RISK_LABELS, RISK_RATES } from '@/types/simulator';
 import { formatCurrencyFull, formatCurrency } from '@/lib/finance';
 import ChartPanel from './ChartPanel';
+import ShareButton from './ShareButton';
 
 interface MobileResultsViewProps {
   state: SimulatorState;
@@ -189,6 +190,16 @@ export default function MobileResultsView({
               </div>
             )}
           </div>
+
+          {/* Share */}
+          {state.projectedValue > 0 && (
+            <div className="mt-5">
+              <ShareButton
+                text={`📈 Just found out my investments could grow to ${projectedFormatted} in ${state.years} years. That's the power of compounding. Calculate yours:`}
+                url="https://startinvesting.ai"
+              />
+            </div>
+          )}
 
           {/* Disclaimer */}
           <p className="text-[11px] text-[#ccc] leading-relaxed mt-4">

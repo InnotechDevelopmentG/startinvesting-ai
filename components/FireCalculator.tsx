@@ -3,6 +3,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { calculateFIRE, fmtFireFull, fmtFireShort, FireInputs } from '@/lib/fire';
 import EmailCaptureModal from './EmailCaptureModal';
+import Tooltip from './Tooltip';
+import ShareButton from './ShareButton';
 
 const WR_OPTIONS = [3, 3.5, 4, 5] as const;
 
@@ -38,7 +40,7 @@ function yearsLabel(yrs: number | null): string {
 }
 
 function NumInput({
-  label, value, onChange, prefix, suffix, hint, inputMode = 'numeric',
+  label, value, onChange, prefix, suffix, hint, tooltip, inputMode = 'numeric',
 }: {
   label: string;
   value: string;
@@ -46,11 +48,15 @@ function NumInput({
   prefix?: string;
   suffix?: string;
   hint?: string;
+  tooltip?: string;
   inputMode?: 'numeric' | 'decimal';
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[12px] font-medium text-[#555] uppercase tracking-wider">{label}</label>
+      <div className="flex items-center gap-1.5">
+        <label className="text-[12px] font-medium text-[#555] uppercase tracking-wider">{label}</label>
+        {tooltip && <Tooltip content={tooltip} />}
+      </div>
       <div className="flex items-center bg-[#f9fafb] border border-[#e5e7eb] rounded-xl px-3 py-2.5 focus-within:border-[#00C896] transition-colors">
         {prefix && <span className="text-[14px] text-[#aaa] mr-1.5 flex-shrink-0">{prefix}</span>}
         <input
@@ -142,6 +148,13 @@ export default function FireCalculator() {
   const scenarioBetter  = useMemo(() => calculateFIRE({ ...inputs, annualReturn: inputs.annualReturn + 1 }), [inputs]);
   const scenarioLess    = useMemo(() => calculateFIRE({ ...inputs, annualSpending: Math.round(inputs.annualSpending * 0.8) }), [inputs]);
 
+  const shareText = useMemo(() => {
+    if (result.fireAge !== null && result.yearsToFIRE !== null) {
+      return `🔥 Just calculated my FIRE number: ${fmtFireFull(result.fireNumber)} — I can retire at age ${Math.ceil(result.fireAge)} in ${yearsLabel(result.yearsToFIRE)}. What's yours?`;
+    }
+    return `🔥 My FIRE number is ${fmtFireFull(result.fireNumber)} — the exact amount I need to never work again. Calculate yours:`;
+  }, [result]);
+
   const moreYrs   = result.yearsToFIRE !== null && scenarioMore.yearsToFIRE   !== null ? +(result.yearsToFIRE - scenarioMore.yearsToFIRE).toFixed(1)   : null;
   const betterYrs = result.yearsToFIRE !== null && scenarioBetter.yearsToFIRE !== null ? +(result.yearsToFIRE - scenarioBetter.yearsToFIRE).toFixed(1) : null;
   const lessYrs   = result.yearsToFIRE !== null && scenarioLess.yearsToFIRE   !== null ? +(result.yearsToFIRE - scenarioLess.yearsToFIRE).toFixed(1)   : null;
@@ -191,9 +204,29 @@ export default function FireCalculator() {
           {/* Situation */}
           <div className="bg-white border border-[#f3f4f6] rounded-2xl p-6 flex flex-col gap-5">
             <p className="text-[12px] font-semibold uppercase tracking-widest text-[#aaa]">Your Situation</p>
-            <NumInput label="Current Age"            value={ageStr}      onChange={onAge}     suffix="yrs" />
-            <NumInput label="Current Investments"    value={savingsStr}  onChange={onSavings} prefix="$"   hint="Total across 401(k), IRA, brokerage, etc." />
-            <NumInput label="Monthly Contribution"   value={contribStr}  onChange={onContrib} prefix="$"   hint="Amount you invest each month" />
+            <NumInput
+              label="Current Age"
+              value={ageStr}
+              onChange={onAge}
+              suffix="yrs"
+              tooltip="Your age today. This determines how long your money has to compound — even a few extra years makes an enormous difference."
+            />
+            <NumInput
+              label="Current Investments"
+              value={savingsStr}
+              onChange={onSavings}
+              prefix="$"
+              hint="Total across 401(k), IRA, brokerage, etc."
+              tooltip="Your total invested balance across all accounts — 401(k), Roth IRA, traditional IRA, brokerage. Don't include cash savings or emergency funds."
+            />
+            <NumInput
+              label="Monthly Contribution"
+              value={contribStr}
+              onChange={onContrib}
+              prefix="$"
+              hint="Amount you invest each month"
+              tooltip="How much you invest every month. Even $200/month at 25 beats $1,000/month at 40 — consistency and time are everything."
+            />
           </div>
 
           {/* Target */}
@@ -206,11 +239,15 @@ export default function FireCalculator() {
               onChange={onSpending}
               prefix="$"
               hint={`In today's dollars — $${Math.round(inputs.annualSpending / 12).toLocaleString()}/mo · what you'd need if you stopped working tomorrow`}
+              tooltip="What you'd need to live on per year in retirement, in today's dollars. Most people underestimate this. Include housing, food, travel, healthcare, and fun."
             />
 
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <label className="text-[12px] font-medium text-[#555] uppercase tracking-wider">Withdrawal Rate</label>
+                <div className="flex items-center gap-1.5">
+                  <label className="text-[12px] font-medium text-[#555] uppercase tracking-wider">Withdrawal Rate</label>
+                  <Tooltip content="The % of your portfolio you draw down each year. The 4% rule comes from the Trinity Study (1998) — historically sustainable for 30+ year retirements. Go lower for extra safety or a very long retirement." />
+                </div>
                 <span className="text-[11px] text-[#aaa]">{(100 / inputs.withdrawalRate).toFixed(1)}× multiplier</span>
               </div>
               <div className="flex gap-2">
@@ -243,6 +280,7 @@ export default function FireCalculator() {
               suffix="%"
               inputMode="decimal"
               hint="S&P 500 has averaged ~10% nominal historically. 7% is a common real-return estimate."
+              tooltip="Your expected average annual investment return. The S&P 500 has averaged ~10% nominally since 1926. After inflation, a real return of 6–7% is a reasonable planning assumption."
             />
             <NumInput
               label="Inflation Rate"
@@ -251,6 +289,7 @@ export default function FireCalculator() {
               suffix="%"
               inputMode="decimal"
               hint="US long-run average ~3%. Fed targets 2%."
+              tooltip="How much purchasing power erodes per year. The US long-run average is ~3%. The Fed targets 2%. All results shown in today's dollars already account for this."
             />
 
             <div className="bg-[#f9fafb] border border-[#f3f4f6] rounded-xl px-4 py-3">
@@ -295,6 +334,14 @@ export default function FireCalculator() {
               <p className="text-[11px] text-[#888] mt-3">Increase monthly contributions or target lower spending to reach FIRE.</p>
             )}
           </div>
+
+          {/* Share */}
+          {result.fireNumber > 0 && (
+            <ShareButton
+              text={shareText}
+              url="https://startinvesting.ai/fire"
+            />
+          )}
 
           {/* Progress */}
           <div className="bg-white border border-[#f3f4f6] rounded-2xl p-6">

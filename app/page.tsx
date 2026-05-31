@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Simulator from '@/components/Simulator';
+import HeroSection from '@/components/HeroSection';
 
 export const metadata: Metadata = {
   title: 'Investment Simulator — startinvesting.ai',
@@ -37,6 +38,7 @@ export default function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <HeroSection />
       <Simulator />
     </>
   );

@@ -27,6 +27,7 @@ import {
   formatCurrencyFull,
   easeOutQuart,
 } from '@/lib/finance';
+import ShareButton from './ShareButton';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
 
@@ -230,6 +231,14 @@ export default function ChartPanel({ state, currentStep, hideHeader = false, cha
                 <p className="text-[13px] text-[#888] mt-2">
                   {RISK_LABELS[state.riskProfile]} · {(annualRate * 100).toFixed(0)}% avg annual return
                 </p>
+              )}
+              {currentStep >= 7 && (
+                <div className="mt-4">
+                  <ShareButton
+                    text={`📈 Just simulated my investments — could grow to ${formatCurrencyFull(state.projectedValue)} in ${state.years} years. The compounding is wild. Calculate yours:`}
+                    url="https://startinvesting.ai"
+                  />
+                </div>
               )}
             </>
           ) : (
