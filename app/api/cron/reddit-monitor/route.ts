@@ -96,12 +96,12 @@ export async function GET(req: NextRequest) {
 
     const allPosts: RedditPost[] = [];
     for (const { subreddit, query } of SEARCHES) {
-      const posts = await searchSubreddit(subreddit, query, 10);
+      const posts = await searchSubreddit(subreddit, query);
       allPosts.push(...posts);
       await sleep(600);
     }
     for (const sub of NEW_FEED_SUBS) {
-      const posts = await getSubredditNew(sub, 20);
+      const posts = await getSubredditNew(sub);
       allPosts.push(...posts);
       await sleep(600);
     }
