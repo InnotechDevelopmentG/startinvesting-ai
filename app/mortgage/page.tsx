@@ -14,6 +14,31 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Mortgage Calculator',
+  url: 'https://startinvesting.ai/mortgage',
+  description: 'Free mortgage calculator showing true monthly payment including taxes, insurance, PMI, and HOA — plus full amortization schedule and extra payment savings.',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'Web',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  publisher: { '@type': 'Organization', name: 'startinvesting.ai', url: 'https://startinvesting.ai' },
+  featureList: [
+    'True monthly payment calculation',
+    'PMI calculator with removal date',
+    'Property tax and insurance breakdown',
+    'Full amortization schedule',
+    'Extra payment savings calculator',
+    'Loan term comparison',
+  ],
+};
+
 export default function MortgagePage() {
-  return <MortgageCalculator />;
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <MortgageCalculator />
+    </>
+  );
 }
