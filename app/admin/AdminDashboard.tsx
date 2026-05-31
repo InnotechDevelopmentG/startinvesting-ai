@@ -163,14 +163,21 @@ export default function AdminDashboard({
     router.refresh();
   }
 
-  function handleDismiss(id: string) {
+  async function handleDismiss(id: string) {
     setDismissed(prev => { const next = new Set(Array.from(prev)); next.add(id); return next; });
-    fetch('/api/admin/reddit-dismiss', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-      keepalive: true,
-    }).catch(() => {});
+    try {
+      const res = await fetch('/api/admin/reddit-dismiss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        console.error('[dismiss] failed:', res.status, body);
+      }
+    } catch (err) {
+      console.error('[dismiss] error:', err);
+    }
   }
 
   function handleAddress(id: string) {
