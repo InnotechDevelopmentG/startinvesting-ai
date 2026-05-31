@@ -33,6 +33,7 @@ interface Opportunity {
   body_snippet: string;
   drafted_reply: string;
   created_at: string;
+  addressed?: boolean;
 }
 
 type SortKey = keyof Submission;
@@ -79,10 +80,12 @@ export default function AdminDashboard({
   submissions,
   subscribers,
   opportunities,
+  addressed,
 }: {
   submissions: Submission[];
   subscribers: Subscriber[];
   opportunities: Opportunity[];
+  addressed: Opportunity[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('leads');
@@ -91,9 +94,11 @@ export default function AdminDashboard({
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [subSearch, setSubSearch] = useState('');
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [addressedIds, setAddressedIds] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   // ── Stats ───────────────────────────────────────────────────────────────
   const now = new Date();
@@ -137,8 +142,13 @@ export default function AdminDashboard({
 
   // ── Reddit opportunities ─────────────────────────────────────────────────
   const visibleOpps = useMemo(
-    () => opportunities.filter(o => !dismissed.has(o.id)),
-    [opportunities, dismissed]
+    () => opportunities.filter(o => !dismissed.has(o.id) && !addressedIds.has(o.id)),
+    [opportunities, dismissed, addressedIds]
+  );
+
+  const completedOpps = useMemo(
+    () => [...addressed, ...opportunities.filter(o => addressedIds.has(o.id))],
+    [addressed, opportunities, addressedIds]
   );
 
   function toggleSort(key: SortKey) {
@@ -161,10 +171,20 @@ export default function AdminDashboard({
     });
   }
 
+  async function handleAddress(id: string) {
+    setAddressedIds(prev => { const next = new Set(Array.from(prev)); next.add(id); return next; });
+    await fetch('/api/admin/reddit-address', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+  }
+
   async function handleCopy(id: string, text: string) {
     await navigator.clipboard.writeText(text);
     setCopied(id);
     setTimeout(() => setCopied(null), 2000);
+    handleAddress(id);
   }
 
   async function handleScan() {
@@ -468,6 +488,7 @@ export default function AdminDashboard({
                           href={opp.url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => handleAddress(opp.id)}
                           className="px-4 py-2 rounded-lg text-[13px] font-medium border border-[#e5e7eb] text-[#555] hover:border-[#00C896] hover:text-[#00C896] transition-colors"
                         >
                           Go post it →
@@ -483,9 +504,50 @@ export default function AdminDashboard({
                   ))}
                 </div>
               )}
+              {/* Completed section */}
+              {completedOpps.length > 0 && (
+                <div className="mt-6 border-t border-[#f3f4f6] pt-4">
+                  <button
+                    onClick={() => setShowCompleted(v => !v)}
+                    className="flex items-center gap-2 text-[12px] font-medium text-[#aaa] hover:text-[#555] transition-colors mb-3"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                      style={{ transform: showCompleted ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+                      <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Completed ({completedOpps.length})
+                  </button>
+                  {showCompleted && (
+                    <div className="flex flex-col gap-3">
+                      {completedOpps.map(opp => (
+                        <div key={opp.id} className="rounded-xl border border-[#f3f4f6] bg-[#fafafa] p-4 opacity-60">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] font-semibold text-[#ff4500] bg-[#fff1ee] px-2 py-0.5 rounded-full">r/{opp.subreddit}</span>
+                              <span className="text-[11px] text-[#bbb]">{timeAgo(opp.created_at)}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                                <path d="M1 5l3.5 3.5L11 1" stroke="#00C896" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              <span className="text-[11px] text-[#00C896] font-medium">Posted</span>
+                            </div>
+                          </div>
+                          <p className="text-[13px] text-[#555] mt-2 leading-snug">{opp.title}</p>
+                          <a href={opp.url} target="_blank" rel="noopener noreferrer"
+                            className="text-[11px] text-[#bbb] hover:text-[#00C896] transition-colors mt-1 inline-block">
+                            View thread →
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="mt-4 pt-4 border-t border-[#f3f4f6]">
                 <p className="text-[12px] text-[#bbb]">
-                  {visibleOpps.length} opportunit{visibleOpps.length !== 1 ? 'ies' : 'y'} · Auto-scans daily at 10am UTC · Always review and personalise before posting
+                  {visibleOpps.length} to action · {completedOpps.length} completed · Auto-scans daily at 10am UTC · Always review before posting
                 </p>
               </div>
             </div>
