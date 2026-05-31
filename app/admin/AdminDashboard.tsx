@@ -184,7 +184,6 @@ export default function AdminDashboard({
     await navigator.clipboard.writeText(text);
     setCopied(id);
     setTimeout(() => setCopied(null), 2000);
-    handleAddress(id);
   }
 
   async function handleScan() {
