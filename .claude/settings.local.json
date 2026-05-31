@@ -55,7 +55,20 @@
       "Bash(source ~/.zshrc)",
       "Bash(/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin/node /Users/griffenaddie/.nvm/versions/node/v20.20.2/bin/npx vercel --prod --yes)",
       "Bash(export NVM_DIR=\"$HOME/.nvm\")",
-      "Bash(export PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\")"
+      "Bash(export PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\")",
+      "Bash(/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin/npx vercel:*)",
+      "Bash(curl -sv \"https://www.reddit.com/r/personalfinance/search.json?q=invest&restrict_sr=true&sort=new&t=week&limit=5\" -H \"User-Agent: startinvesting.ai/1.0\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://www.reddit.com/r/personalfinance/search.json?q=invest&restrict_sr=true&sort=new&t=week&limit=5\" -H \"User-Agent: startinvesting.ai/1.0\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://www.reddit.com/r/personalfinance/new.json?limit=10\" -H \"User-Agent: Mozilla/5.0 \\(compatible; startinvesting-bot/1.0\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://oauth.reddit.com/r/personalfinance/new?limit=5\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://www.reddit.com/r/personalfinance/new.json?limit=5\" -H \"User-Agent: Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/120.0.0.0 Safari/537.36\")",
+      "Bash(curl -s \"https://www.reddit.com/r/personalfinance/new.json?limit=3\" -H \"User-Agent: Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36\" -H \"Accept: application/json\" -H \"Accept-Language: en-US,en;q=0.9\" -w \"\\\\nHTTP_STATUS:%{http_code}\")",
+      "Bash(curl -s \"https://www.reddit.com/r/personalfinance/search.rss?q=invest&restrict_sr=on&sort=new&t=week\" -H \"User-Agent: Mozilla/5.0 \\(compatible; startinvesting.ai reader\\)\" -o /dev/null -w \"%{http_code}\")",
+      "Bash(ls ~/.nvm/versions/node/*/bin/node)",
+      "Bash(/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin/node node_modules/.bin/tsc --noEmit)",
+      "Bash(PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\" npx vercel env pull --yes)",
+      "Bash(PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\" npx vercel env ls)",
+      "Bash(PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\" npx vercel env pull --environment=production --yes)"
     ]
   }
 }
