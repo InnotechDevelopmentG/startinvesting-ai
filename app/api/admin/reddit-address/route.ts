@@ -13,8 +13,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
-    const text = await req.text();
-    const { id } = JSON.parse(text);
+    const { id } = await req.json();
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     const supabase = getSupabaseAdminClient();
     const { error } = await supabase
