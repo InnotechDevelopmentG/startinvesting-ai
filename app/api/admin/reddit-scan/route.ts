@@ -6,9 +6,9 @@ export const maxDuration = 60;
 
 // Verify the request is from an authenticated admin session
 async function isAdminAuthed(req: NextRequest): Promise<boolean> {
-  const token = req.cookies.get('admin_token')?.value;
+  const token = req.cookies.get('admin_session')?.value;
   if (!token) return false;
-  const expected = process.env.ADMIN_TOKEN;
+  const expected = process.env.ADMIN_SESSION_TOKEN || process.env.ADMIN_PASSWORD;
   return !!expected && token === expected;
 }
 
