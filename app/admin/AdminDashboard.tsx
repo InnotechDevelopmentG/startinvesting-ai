@@ -174,6 +174,10 @@ export default function AdminDashboard({
       if (!res.ok) {
         const body = await res.text();
         console.error('[dismiss] failed:', res.status, body);
+        // Rollback optimistic update so user knows it failed
+        setDismissed(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+      } else {
+        window.location.reload();
       }
     } catch (err) {
       console.error('[dismiss] error:', err);
