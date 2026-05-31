@@ -5,14 +5,22 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
   const supabase = getSupabaseAdminClient();
-  const { data: submissions, error } = await supabase
-    .from('simulator_submissions')
-    .select('*')
-    .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Admin fetch error:', error);
-  }
+  const [{ data: submissions }, { data: subscribers }] = await Promise.all([
+    supabase
+      .from('simulator_submissions')
+      .select('*')
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('newsletter_subscribers')
+      .select('id, email, created_at')
+      .order('created_at', { ascending: false }),
+  ]);
 
-  return <AdminDashboard submissions={submissions || []} />;
+  return (
+    <AdminDashboard
+      submissions={submissions || []}
+      subscribers={subscribers || []}
+    />
+  );
 }
