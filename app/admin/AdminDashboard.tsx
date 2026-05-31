@@ -152,7 +152,7 @@ export default function AdminDashboard({
   }
 
   async function handleDismiss(id: string) {
-    setDismissed(prev => new Set([...prev, id]));
+    setDismissed(prev => { const next = new Set(Array.from(prev)); next.add(id); return next; });
     await fetch('/api/admin/reddit-dismiss', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
