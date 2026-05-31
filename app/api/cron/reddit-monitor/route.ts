@@ -13,18 +13,16 @@ function isAuthorized(req: NextRequest): boolean {
   return isVercelCron || authHeader === `Bearer ${cronSecret}` || querySecret === cronSecret;
 }
 
-const TARGET_SUBREDDITS = new Set([
-  'personalfinance', 'investing', 'financialindependence',
-  'Bogleheads', 'FirstTimeHomeBuyer', 'povertyfinance',
-  'Millennials', 'RealEstate', 'Fire', 'leanfire',
-]);
-
-const SEARCH_QUERIES = [
-  'how much should I invest per month',
-  'compound interest calculator retire',
-  'S&P 500 index fund beginner how to start',
-  'mortgage calculator first home buying',
-  'how to start investing young',
+const SUBREDDIT_SEARCHES: { subreddit: string; query: string }[] = [
+  { subreddit: 'personalfinance',        query: 'invest' },
+  { subreddit: 'personalfinance',        query: 'retirement calculator' },
+  { subreddit: 'investing',              query: 'beginner start' },
+  { subreddit: 'investing',              query: 'index fund how much' },
+  { subreddit: 'financialindependence',  query: 'calculator projection' },
+  { subreddit: 'Bogleheads',            query: 'how much invest' },
+  { subreddit: 'FirstTimeHomeBuyer',     query: 'mortgage calculator' },
+  { subreddit: 'povertyfinance',         query: 'start investing' },
+  { subreddit: 'Fire',                   query: 'calculator retire' },
 ];
 
 interface RedditPost {
@@ -38,9 +36,9 @@ interface RedditPost {
   created_utc: number;
 }
 
-async function searchReddit(query: string): Promise<RedditPost[]> {
+async function searchReddit(subreddit: string, query: string): Promise<RedditPost[]> {
   try {
-    const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&sort=new&t=day&limit=15&type=link`;
+    const url = `https://www.reddit.com/r/${subreddit}/search.json?q=${encodeURIComponent(query)}&restrict_sr=true&sort=new&t=week&limit=10`;
     const res = await fetch(url, {
       headers: {
         'User-Agent': 'startinvesting.ai/1.0 (educational finance monitor; contact@startinvesting.ai)',
@@ -126,20 +124,17 @@ export async function GET(req: NextRequest) {
 
     // Search Reddit across all queries
     const allPosts: RedditPost[] = [];
-    for (const query of SEARCH_QUERIES) {
-      const posts = await searchReddit(query);
+    for (const { subreddit, query } of SUBREDDIT_SEARCHES) {
+      const posts = await searchReddit(subreddit, query);
       allPosts.push(...posts);
-      await sleep(1200); // stay well under rate limit
+      await sleep(1000);
     }
 
-    // Deduplicate by post ID, filter to target subreddits, exclude known
     const seen = new Set<string>();
     const candidates: RedditPost[] = [];
     for (const post of allPosts) {
       if (seen.has(post.id) || knownIds.has(post.id)) continue;
-      if (!TARGET_SUBREDDITS.has(post.subreddit)) continue;
-      // Skip posts older than 48 hours
-      if (Date.now() / 1000 - post.created_utc > 48 * 3600) continue;
+      if (Date.now() / 1000 - post.created_utc > 7 * 24 * 3600) continue;
       seen.add(post.id);
       candidates.push(post);
     }
@@ -147,7 +142,6 @@ export async function GET(req: NextRequest) {
     // Score and take top 6
     const scored = candidates
       .map((p) => ({ post: p, score: scorePost(p.title, p.selftext ?? '') }))
-      .filter(({ score }) => score >= 4)
       .sort((a, b) => b.score - a.score)
       .slice(0, 6);
 
