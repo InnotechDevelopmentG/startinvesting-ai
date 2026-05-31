@@ -14,8 +14,15 @@ function isValidEmail(email: string): boolean {
 }
 
 export default function StepEmail({ state, onNext }: StepEmailProps) {
+  // Read stored email synchronously so we never flash the form when we'll auto-submit
+  const [storedEmail] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
+    const s = localStorage.getItem('early_capture_email') ?? '';
+    return isValidEmail(s) ? s : '';
+  });
+
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(storedEmail !== '');
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,30 +30,26 @@ export default function StepEmail({ state, onNext }: StepEmailProps) {
   const projectedFormatted = formatCurrencyFull(state.projectedValue);
   const valid = isValidEmail(email);
 
-  // Auto-submit if email was captured earlier — snapshot state at mount, runs once only
+  // Auto-submit if email was captured earlier — loading=true already, no form flash
   useEffect(() => {
-    const stored = localStorage.getItem('early_capture_email');
-    if (!stored || !isValidEmail(stored)) return;
-    const snapshot = {
-      email: stored,
-      age: state.age,
-      startingAmount: state.startingAmount,
-      frequency: state.frequency,
-      contributionAmount: state.contributionAmount,
-      years: state.years,
-      riskProfile: state.riskProfile,
-      projectedValue: state.projectedValue,
-      savingsBenchmark: state.savingsBenchmark,
-    };
-    setLoading(true);
+    if (!storedEmail) return;
     fetch('/api/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(snapshot),
+      body: JSON.stringify({
+        email: storedEmail,
+        age: state.age,
+        startingAmount: state.startingAmount,
+        frequency: state.frequency,
+        contributionAmount: state.contributionAmount,
+        years: state.years,
+        riskProfile: state.riskProfile,
+        projectedValue: state.projectedValue,
+        savingsBenchmark: state.savingsBenchmark,
+      }),
     })
       .then(() => setSuccess(true))
-      .catch(() => setEmail(stored))
-      .finally(() => setLoading(false));
+      .catch(() => { setEmail(storedEmail); setLoading(false); });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSubmit() {
@@ -99,6 +102,24 @@ export default function StepEmail({ state, onNext }: StepEmailProps) {
         >
           Open a brokerage account →
         </button>
+      </div>
+    );
+  }
+
+  // Auto-submitting in the background — show a clean interim state, not the form
+  if (loading && storedEmail) {
+    return (
+      <div className="flex flex-col items-center gap-6 text-center py-4">
+        <div className="w-16 h-16 rounded-full bg-[#E6FAF5] flex items-center justify-center">
+          <svg width="26" height="20" viewBox="0 0 26 20" fill="none" className="opacity-60">
+            <rect x="1" y="1" width="24" height="18" rx="3" stroke="#00C896" strokeWidth="1.8" fill="none"/>
+            <path d="M1 5l12 8 12-8" stroke="#00C896" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <h3 className="text-[24px] font-medium text-[#111] tracking-tight">Sending your plan…</h3>
+          <p className="mt-2 text-[15px] text-[#888]">Personalizing your numbers.</p>
+        </div>
       </div>
     );
   }
