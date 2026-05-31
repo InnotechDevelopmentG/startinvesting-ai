@@ -24,6 +24,7 @@ export interface FireResult {
   progressPercent: number;
   realAnnualReturnPct: number;
   coastFireNumber: number;
+  coastTargetAge: number;
   isCoastFIRE: boolean;
   projections: YearProjection[];
 }
@@ -77,8 +78,9 @@ export function calculateFIRE(inputs: FireInputs): FireResult {
   const yearsToFIRE = months !== null ? months / 12 : null;
   const fireAge = yearsToFIRE !== null ? currentAge + yearsToFIRE : null;
 
-  // Coast FIRE: savings needed now to reach fireNumber at 65 with zero contributions
-  const yearsToCoast = Math.max(65 - currentAge, 1);
+  // Coast FIRE: savings needed now to coast to fireNumber — target age is max(currentAge+10, 65)
+  const coastTargetAge = Math.max(currentAge + 10, 65);
+  const yearsToCoast = coastTargetAge - currentAge;
   const coastFireNumber = fireNumber > 0
     ? Math.round(fireNumber / Math.pow(1 + realAnnual, yearsToCoast))
     : 0;
@@ -113,6 +115,7 @@ export function calculateFIRE(inputs: FireInputs): FireResult {
     progressPercent,
     realAnnualReturnPct,
     coastFireNumber,
+    coastTargetAge,
     isCoastFIRE,
     projections,
   };

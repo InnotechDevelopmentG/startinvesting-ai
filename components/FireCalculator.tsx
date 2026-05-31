@@ -372,7 +372,7 @@ export default function FireCalculator() {
                 <>
                   <p className="text-[12px] font-semibold text-[#00C896] mb-1">You&apos;ve hit Coast FIRE</p>
                   <p className="text-[12px] text-[#555]">
-                    Your current savings will compound to your FIRE number by age 65 — even if you stop investing today.
+                    Your current savings will compound to your FIRE number by age {result.coastTargetAge} — even if you stop investing today.
                   </p>
                 </>
               ) : (
@@ -381,7 +381,7 @@ export default function FireCalculator() {
                     Coast FIRE: {fmtFireShort(result.coastFireNumber)}
                   </p>
                   <p className="text-[12px] text-[#888]">
-                    Save {fmtFireShort(Math.max(result.coastFireNumber - inputs.currentSavings, 0))} more, then you can stop contributing and still retire by 65.
+                    Save {fmtFireShort(Math.max(result.coastFireNumber - inputs.currentSavings, 0))} more, then you can stop contributing and still retire by {result.coastTargetAge}.
                   </p>
                 </>
               )}

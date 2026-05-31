@@ -165,6 +165,7 @@ export default function MortgageCalculator() {
       const pct = inputs.homePrice > 0 ? (inputs.downPayment / inputs.homePrice) * 100 : 20;
       const newDp = Math.round((pct / 100) * hp);
       setDpDollarStr(newDp > 0 ? newDp.toLocaleString() : '');
+      setDpPercentStr(pct > 0 ? pct.toFixed(3) : '');
       updateInputs({ homePrice: hp, downPayment: newDp });
       isUpdating.current = false;
     }

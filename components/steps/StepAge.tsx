@@ -12,6 +12,7 @@ export default function StepAge({ state, onUpdate, onNext }: StepAgeProps) {
   const age = state.age;
   const yearsToRetirement = Math.max(65 - age, 1);
   const pct = ((age - 16) / (75 - 16)) * 100;
+  const pastRetirement = age >= 65;
 
   function handleChange(val: number) {
     const yrs = Math.max(65 - val, 1);
@@ -28,7 +29,7 @@ export default function StepAge({ state, onUpdate, onNext }: StepAgeProps) {
           How old are you?
         </h2>
         <p className="mt-2 text-[15px] text-[#888]">
-          We'll calculate your path to retirement at 65.
+          {age >= 65 ? "We'll project how your investments continue to grow." : "We'll calculate your path to retirement at 65."}
         </p>
       </div>
 
@@ -41,7 +42,9 @@ export default function StepAge({ state, onUpdate, onNext }: StepAgeProps) {
             <span className="text-[20px] text-[#888]">years old</span>
           </div>
           <p className="text-[15px] text-[#888] mt-1">
-            {yearsToRetirement} years until retirement
+            {pastRetirement
+              ? 'Projecting your continued growth'
+              : `${yearsToRetirement} year${yearsToRetirement !== 1 ? 's' : ''} until retirement`}
           </p>
         </div>
 

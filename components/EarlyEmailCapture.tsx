@@ -17,6 +17,7 @@ export default function EarlyEmailCapture({ age, onDismiss }: EarlyEmailCaptureP
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [visible, setVisible] = useState(false);
+  const isClosingRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const valid = isValidEmail(email);
@@ -36,6 +37,8 @@ export default function EarlyEmailCapture({ age, onDismiss }: EarlyEmailCaptureP
   }, [visible]);
 
   function dismiss() {
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
     setVisible(false);
     setTimeout(onDismiss, 300);
   }

@@ -68,7 +68,15 @@
       "Bash(/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin/node node_modules/.bin/tsc --noEmit)",
       "Bash(PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\" npx vercel env pull --yes)",
       "Bash(PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\" npx vercel env ls)",
-      "Bash(PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\" npx vercel env pull --environment=production --yes)"
+      "Bash(PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\" npx vercel env pull --environment=production --yes)",
+      "WebSearch",
+      "Bash(/Users/griffenaddie/.nvm/versions/node/v22.15.0/bin/npx tsc:*)",
+      "Bash(PATH=\"/usr/local/bin:/opt/homebrew/bin:$HOME/.nvm/versions/node/v22.15.0/bin:$HOME/.volta/bin:$HOME/.fnm/node-versions/v22.15.0/installation/bin:$PATH\" node --version)",
+      "Bash(PATH=\"/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin:$PATH\" npx tsc --noEmit)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(xargs ls:*)",
+      "Bash(cat /Users/griffenaddie/SWIH/app/news/[slug]/page.tsx)",
+      "Bash(grep -r \"Math.max\\\\|Math.min\\\\|Math.pow\" /Users/griffenaddie/SWIH/lib/*.ts)"
     ]
   }
 }

@@ -43,8 +43,13 @@ export default function Tooltip({ content }: TooltipProps) {
         onMouseEnter={() => { checkPosition(); setOpen(true); }}
         onMouseLeave={() => setOpen(false)}
         onClick={() => { checkPosition(); setOpen(v => !v); }}
-        className="w-[15px] h-[15px] rounded-full bg-[#e5e7eb] text-[#999] text-[9px] font-bold flex items-center justify-center hover:bg-[#d1d5db] hover:text-[#555] transition-colors flex-shrink-0 leading-none"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); checkPosition(); setOpen(v => !v); }
+          if (e.key === 'Escape') setOpen(false);
+        }}
+        className="w-[15px] h-[15px] rounded-full bg-[#e5e7eb] text-[#999] text-[9px] font-bold flex items-center justify-center hover:bg-[#d1d5db] hover:text-[#555] focus:outline-none focus:ring-2 focus:ring-[#00C896] focus:ring-offset-1 transition-colors flex-shrink-0 leading-none"
         aria-label="More info"
+        aria-expanded={open}
       >
         ?
       </button>

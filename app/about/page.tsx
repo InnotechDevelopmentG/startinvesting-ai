@@ -1,4 +1,17 @@
+import type { Metadata } from 'next';
 import ArticleSubscribe from '@/components/ArticleSubscribe';
+
+export const metadata: Metadata = {
+  title: 'About — startinvesting.ai',
+  description: 'startinvesting.ai is a free tool that helps everyday people understand the power of compound growth using real historical market data. No sign-up required.',
+  alternates: { canonical: 'https://startinvesting.ai/about' },
+  openGraph: {
+    title: 'About — startinvesting.ai',
+    description: 'Free investment tools built for people who want to actually understand their money.',
+    url: 'https://startinvesting.ai/about',
+    type: 'website',
+  },
+};
 
 export default function AboutPage() {
   return (

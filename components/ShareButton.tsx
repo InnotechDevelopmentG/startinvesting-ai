@@ -9,6 +9,7 @@ interface ShareButtonProps {
 
 export default function ShareButton({ text, url }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   async function handleShare() {
     // Native share sheet — works great on iOS/Android
@@ -26,7 +27,9 @@ export default function ShareButton({ text, url }: ShareButtonProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      openPost();
+      // Clipboard blocked — show inline hint to use Post button instead
+      setCopyFailed(true);
+      setTimeout(() => setCopyFailed(false), 3000);
     }
   }
 
@@ -40,7 +43,8 @@ export default function ShareButton({ text, url }: ShareButtonProps) {
   }
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-2 flex-wrap">
       {/* Primary share / copy */}
       <button
         onClick={handleShare}
@@ -71,12 +75,15 @@ export default function ShareButton({ text, url }: ShareButtonProps) {
         onClick={openPost}
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium bg-black text-white hover:bg-[#222] active:scale-[0.97] transition-all duration-200"
       >
-        {/* X logo */}
         <svg width="13" height="13" viewBox="0 0 1200 1227" fill="none">
           <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.163 519.284ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.828Z" fill="white"/>
         </svg>
         Post
       </button>
+    </div>
+      {copyFailed && (
+        <p className="text-[11px] text-[#888]">Couldn&apos;t copy — use Post to share on X instead.</p>
+      )}
     </div>
   );
 }
