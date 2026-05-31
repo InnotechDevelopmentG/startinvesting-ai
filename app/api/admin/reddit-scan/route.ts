@@ -40,16 +40,17 @@ Subreddit: r/${post.subreddit}
 Post title: "${post.title}"
 Post body: "${body}"
 
-Write a GENUINE helpful reply. Rules:
-- Lead with actual useful advice that directly answers what they asked
-- Only mention startinvesting.ai if genuinely relevant (asking about numbers, projections, calculators, mortgage)
-- If you mention it, do so briefly at the end: "I built a free simulator if you want to run your numbers — startinvesting.ai"
-- For mortgage questions mention startinvesting.ai/mortgage specifically
-- Sound like a real helpful person on Reddit, not a marketer
-- 3–5 sentences max
-- Never start with "Great question" or filler
+Write a reply that sounds like a real person dashing off a quick comment. Rules:
+- 2–3 sentences MAX. Shorter is better.
+- Answer their actual question first with a concrete, specific point
+- Lowercase is fine. Imperfect grammar is fine. Don't be formal.
+- Only mention startinvesting.ai if they're asking about numbers/projections/mortgage — and only as a casual aside at the end, e.g. "i made a free tool for this if you wanna play with numbers — startinvesting.ai"
+- For mortgage questions use startinvesting.ai/mortgage
+- NO filler: no "great question", no "hope this helps", no "as someone who...", no bullet points, no em dashes, no "it's worth noting"
+- Do NOT sound like a blog post or a financial advisor
+- Write like a 28-year-old who knows their stuff and is being helpful on Reddit
 
-Return only the reply text.`;
+Return only the reply text, nothing else.`;
 
   try {
     const msg = await anthropic.messages.create({
