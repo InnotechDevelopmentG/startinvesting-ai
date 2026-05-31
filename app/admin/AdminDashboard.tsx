@@ -172,11 +172,13 @@ export default function AdminDashboard({
     setScanResult(null);
     try {
       const res = await fetch('/api/admin/reddit-scan', { method: 'POST' });
-      const data = await res.json() as { success?: boolean; inserted?: number; found?: number; error?: string };
+      const data = await res.json() as { success?: boolean; inserted?: number; found?: number; fetched?: number; unique?: number; error?: string };
       if (!res.ok || data.error) {
         setScanResult(`Error: ${data.error ?? 'scan failed'}`);
       } else {
-        setScanResult(`Found ${data.found} posts · added ${data.inserted} new opportunit${data.inserted !== 1 ? 'ies' : 'y'}`);
+        const fetched = data.fetched ?? data.found ?? 0;
+        const unique = data.unique ?? fetched;
+        setScanResult(`Fetched ${fetched} posts · ${unique} unique · added ${data.inserted} new opportunit${data.inserted !== 1 ? 'ies' : 'y'}`);
         router.refresh();
       }
     } catch {
