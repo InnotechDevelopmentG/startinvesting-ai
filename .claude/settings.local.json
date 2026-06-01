@@ -76,7 +76,15 @@
       "mcp__Claude_Preview__preview_start",
       "Bash(xargs ls:*)",
       "Bash(cat /Users/griffenaddie/SWIH/app/news/[slug]/page.tsx)",
-      "Bash(grep -r \"Math.max\\\\|Math.min\\\\|Math.pow\" /Users/griffenaddie/SWIH/lib/*.ts)"
+      "Bash(grep -r \"Math.max\\\\|Math.min\\\\|Math.pow\" /Users/griffenaddie/SWIH/lib/*.ts)",
+      "Bash(/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin/npm install:*)",
+      "Bash(source \"$NVM_DIR/nvm.sh\")",
+      "Bash(npm list:*)",
+      "Bash(curl -s \"https://startinvesting.ai/api/admin/seed-evergreen\")",
+      "Bash(curl -sL \"https://startinvesting.ai/api/admin/seed-evergreen\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(find ~ -name auth.json -path */vercel*)",
+      "Bash(curl -sL \"https://startinvesting.ai/api/admin/seed-evergreen?secret=seed-evergreen-once\")"
     ]
   }
 }

@@ -4,9 +4,8 @@
     {
       "name": "dev",
       "runtimeExecutable": "/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin/node",
-      "runtimeArgs": ["/Users/griffenaddie/.nvm/versions/node/v20.20.2/bin/npm", "run", "dev"],
-      "port": 3000,
-      "autoPort": true
+      "runtimeArgs": ["/Users/griffenaddie/SWIH/node_modules/.bin/next", "dev", "--port", "3001"],
+      "port": 3001
     }
   ]
 }
