@@ -145,10 +145,20 @@ export default function MortgageCalculator() {
   const isUpdating = useRef(false);
 
   function trackField(name: string) {
-    if (typeof window !== 'undefined' && localStorage.getItem('early_capture_email')) return;
+    if (typeof window !== 'undefined' && (
+      localStorage.getItem('early_capture_email') ||
+      localStorage.getItem('mortgage_modal_dismissed')
+    )) return;
     if (showModal) return;
     touchedFields.current.add(name);
     if (touchedFields.current.size >= 2) setShowModal(true);
+  }
+
+  function handleModalClose() {
+    setShowModal(false);
+    if (typeof window !== 'undefined' && !localStorage.getItem('early_capture_email')) {
+      localStorage.setItem('mortgage_modal_dismissed', '1');
+    }
   }
 
   function updateInputs(patch: Partial<MortgageInputs>) {
@@ -268,7 +278,7 @@ export default function MortgageCalculator() {
       {showModal && (
         <EmailCaptureModal
           source="mortgage"
-          onClose={() => setShowModal(false)}
+          onClose={handleModalClose}
         />
       )}
 

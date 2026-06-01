@@ -93,11 +93,21 @@ export default function FireCalculator() {
   }, []);
 
   function trackField(name: string) {
-    if (typeof window !== 'undefined' && localStorage.getItem('early_capture_email')) return;
+    if (typeof window !== 'undefined' && (
+      localStorage.getItem('early_capture_email') ||
+      localStorage.getItem('fire_modal_dismissed')
+    )) return;
     if (showModal) return;
     touchedFields.current.add(name);
     if (touchedFields.current.size >= 2) {
       setShowModal(true);
+    }
+  }
+
+  function handleModalClose() {
+    setShowModal(false);
+    if (typeof window !== 'undefined' && !localStorage.getItem('early_capture_email')) {
+      localStorage.setItem('fire_modal_dismissed', '1');
     }
   }
 
@@ -181,7 +191,7 @@ export default function FireCalculator() {
         <EmailCaptureModal
           source="fire"
           age={inputs.currentAge || undefined}
-          onClose={() => setShowModal(false)}
+          onClose={handleModalClose}
         />
       )}
 
