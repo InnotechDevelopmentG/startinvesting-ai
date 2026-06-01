@@ -37,8 +37,21 @@ interface Opportunity {
   dismissed?: boolean;
 }
 
+interface QuoraOpportunity {
+  id: string;
+  question_id: string;
+  title: string;
+  url: string;
+  body_snippet: string;
+  drafted_reply: string;
+  score: number;
+  addressed?: boolean;
+  dismissed?: boolean;
+  created_at: string;
+}
+
 type SortKey = keyof Submission;
-type Tab = 'leads' | 'subscribers' | 'reddit' | 'twitter';
+type Tab = 'leads' | 'subscribers' | 'reddit' | 'twitter' | 'quora';
 
 const RISK_STYLE: Record<string, { bg: string; text: string; label: string }> = {
   conservative: { bg: '#f3f4f6', text: '#555', label: 'Steady' },
@@ -84,6 +97,7 @@ export default function AdminDashboard({
   addressed,
   twitterOpps,
   twitterAddressed,
+  quoraOpps,
 }: {
   submissions: Submission[];
   subscribers: Subscriber[];
@@ -91,6 +105,7 @@ export default function AdminDashboard({
   addressed: Opportunity[];
   twitterOpps: Opportunity[];
   twitterAddressed: Opportunity[];
+  quoraOpps: QuoraOpportunity[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('leads');
@@ -111,6 +126,13 @@ export default function AdminDashboard({
   const [twScanning, setTwScanning] = useState(false);
   const [twScanResult, setTwScanResult] = useState<string | null>(null);
   const [twShowCompleted, setTwShowCompleted] = useState(false);
+
+  // Quora state
+  const [qDismissed, setQDismissed] = useState<Set<string>>(new Set());
+  const [qAddressedIds, setQAddressedIds] = useState<Set<string>>(new Set());
+  const [qScanning, setQScanning] = useState(false);
+  const [qScanResult, setQScanResult] = useState<string | null>(null);
+  const [qShowCompleted, setQShowCompleted] = useState(false);
 
   // ── Stats ───────────────────────────────────────────────────────────────
   const now = new Date();
@@ -172,6 +194,17 @@ export default function AdminDashboard({
   const completedTwOpps = useMemo(
     () => twitterOpps.filter(o => o.dismissed || o.addressed || twAddressedIds.has(o.id) || twDismissed.has(o.id)),
     [twitterOpps, twAddressedIds, twDismissed]
+  );
+
+  // ── Quora opportunities ──────────────────────────────────────────────────
+  const visibleQuoraOpps = useMemo(
+    () => quoraOpps.filter(o => !o.dismissed && !o.addressed && !qDismissed.has(o.id) && !qAddressedIds.has(o.id)),
+    [quoraOpps, qDismissed, qAddressedIds]
+  );
+
+  const completedQuoraOpps = useMemo(
+    () => quoraOpps.filter(o => o.dismissed || o.addressed || qAddressedIds.has(o.id) || qDismissed.has(o.id)),
+    [quoraOpps, qAddressedIds, qDismissed]
   );
 
   function toggleSort(key: SortKey) {
@@ -293,6 +326,50 @@ export default function AdminDashboard({
     }
   }
 
+  async function handleQDismiss(id: string) {
+    setQDismissed(prev => { const next = new Set(Array.from(prev)); next.add(id); return next; });
+    try {
+      const res = await fetch('/api/admin/quora-dismiss', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      if (!res.ok) setQDismissed(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+      else window.location.reload();
+    } catch {
+      setQDismissed(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+    }
+  }
+
+  async function handleQAddress(id: string) {
+    setQAddressedIds(prev => { const next = new Set(Array.from(prev)); next.add(id); return next; });
+    try {
+      const res = await fetch('/api/admin/quora-address', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      if (!res.ok) setQAddressedIds(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+      else window.location.reload();
+    } catch {
+      setQAddressedIds(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+    }
+  }
+
+  async function handleQScan() {
+    setQScanning(true);
+    setQScanResult(null);
+    try {
+      const res = await fetch('/api/admin/quora-scan', { method: 'POST' });
+      const data = await res.json() as { success?: boolean; inserted?: number; fetched?: number; unique?: number; error?: string; insertErrors?: string[] };
+      if (!res.ok || data.error) {
+        setQScanResult(`Error: ${data.error ?? 'scan failed'}`);
+      } else if (data.insertErrors?.length) {
+        setQScanResult(`Insert failed: ${data.insertErrors[0]}`);
+      } else {
+        const inserted = data.inserted ?? 0;
+        setQScanResult(`Added ${inserted} new — reloading…`);
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    } catch {
+      setQScanResult('Error: could not reach scan endpoint');
+    } finally {
+      setQScanning(false);
+    }
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#fafafa]">
@@ -370,6 +447,7 @@ export default function AdminDashboard({
                 { key: 'subscribers', label: 'Newsletter subscribers',  count: subscribers.length },
                 { key: 'reddit',      label: 'Reddit opportunities',    count: visibleOpps.length },
                 { key: 'twitter',     label: 'X/Twitter opportunities', count: visibleTwOpps.length },
+                { key: 'quora',       label: 'Quora opportunities',     count: visibleQuoraOpps.length },
               ] as { key: Tab; label: string; count: number }[]).map(({ key, label, count }) => (
                 <button
                   key={key}
@@ -421,6 +499,22 @@ export default function AdminDashboard({
                   className="px-4 py-2 text-[13px] font-medium rounded-lg bg-[#111] text-white hover:bg-[#333] disabled:opacity-50 transition-colors whitespace-nowrap"
                 >
                   {twScanning ? 'Scanning X…' : 'Scan X now'}
+                </button>
+              </div>
+            )}
+            {tab === 'quora' && (
+              <div className="flex items-center gap-3">
+                {qScanResult && (
+                  <span className={`text-[12px] ${qScanResult.startsWith('Error') || qScanResult.startsWith('Insert') ? 'text-red-500' : 'text-[#00C896]'}`}>
+                    {qScanResult}
+                  </span>
+                )}
+                <button
+                  onClick={handleQScan}
+                  disabled={qScanning}
+                  className="px-4 py-2 text-[13px] font-medium rounded-lg bg-[#111] text-white hover:bg-[#333] disabled:opacity-50 transition-colors whitespace-nowrap"
+                >
+                  {qScanning ? 'Scanning Quora…' : 'Scan Quora now'}
                 </button>
               </div>
             )}
@@ -788,6 +882,120 @@ export default function AdminDashboard({
               <div className="mt-4 pt-4 border-t border-[#f3f4f6]">
                 <p className="text-[12px] text-[#bbb]">
                   {visibleTwOpps.length} to action · {completedTwOpps.length} completed · Always review before posting
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Quora opportunities ── */}
+          {tab === 'quora' && (
+            <div className="p-5">
+              {visibleQuoraOpps.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
+                  <div className="w-12 h-12 rounded-full bg-[#f3f4f6] flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="#d1d5db" strokeWidth="1.5"/>
+                      <path d="M9 9a3 3 0 016 0c0 2-3 3-3 4" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round"/>
+                      <circle cx="12" cy="17" r="1" fill="#d1d5db"/>
+                    </svg>
+                  </div>
+                  <p className="text-[15px] font-medium text-[#111]">No Quora opportunities yet</p>
+                  <p className="text-[13px] text-[#888]">Click &ldquo;Scan Quora now&rdquo; to find relevant questions, or wait for the daily scan.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {visibleQuoraOpps.map((opp) => (
+                    <div key={opp.id} className="rounded-xl border border-[#f3f4f6] p-5 hover:border-[#e5e7eb] transition-colors">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[11px] font-semibold text-white bg-[#B92B27] px-2.5 py-1 rounded-full">Quora</span>
+                          <span className="text-[11px] text-[#bbb]">{timeAgo(opp.created_at)}</span>
+                        </div>
+                        <a href={opp.url} target="_blank" rel="noopener noreferrer"
+                          className="flex-shrink-0 flex items-center gap-1 text-[12px] text-[#888] hover:text-[#00C896] transition-colors">
+                          Open question
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                            <path d="M1 9L9 1M9 1H4M9 1v5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </a>
+                      </div>
+                      <p className="text-[14px] font-semibold text-[#111] leading-snug mb-2">{opp.title}</p>
+                      {opp.body_snippet && (
+                        <p className="text-[12px] text-[#888] leading-relaxed mb-4 line-clamp-2">{opp.body_snippet}</p>
+                      )}
+                      <div className="border-t border-[#f3f4f6] mb-4" />
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#aaa] mb-2">Drafted answer</p>
+                      <div className="bg-[#fafafa] rounded-lg px-4 py-3 mb-4">
+                        <p className="text-[13px] text-[#444] leading-relaxed whitespace-pre-wrap">{opp.drafted_reply}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => handleCopy(opp.id, opp.drafted_reply)}
+                          className="px-4 py-2 rounded-lg text-[13px] font-medium bg-[#00C896] text-white hover:bg-[#00b386] transition-colors">
+                          {copied === opp.id ? 'Copied!' : 'Copy answer'}
+                        </button>
+                        <a href={opp.url} target="_blank" rel="noopener noreferrer"
+                          onClick={() => handleQAddress(opp.id)}
+                          className="px-4 py-2 rounded-lg text-[13px] font-medium border border-[#e5e7eb] text-[#555] hover:border-[#00C896] hover:text-[#00C896] transition-colors">
+                          Go answer on Quora →
+                        </a>
+                        <button onClick={() => handleQDismiss(opp.id)}
+                          className="ml-auto px-4 py-2 rounded-lg text-[13px] text-[#bbb] hover:text-[#888] transition-colors">
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {completedQuoraOpps.length > 0 && (
+                <div className="mt-6 border-t border-[#f3f4f6] pt-4">
+                  <button onClick={() => setQShowCompleted(v => !v)}
+                    className="flex items-center gap-2 text-[12px] font-medium text-[#aaa] hover:text-[#555] transition-colors mb-3">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                      style={{ transform: qShowCompleted ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+                      <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Completed ({completedQuoraOpps.length})
+                  </button>
+                  {qShowCompleted && (
+                    <div className="flex flex-col gap-3">
+                      {completedQuoraOpps.map(opp => {
+                        const wasDismissed = qDismissed.has(opp.id) || opp.dismissed;
+                        return (
+                          <div key={opp.id} className="rounded-xl border border-[#f3f4f6] bg-[#fafafa] p-4 opacity-60">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-semibold text-white bg-[#B92B27] px-2 py-0.5 rounded-full">Quora</span>
+                                <span className="text-[11px] text-[#bbb]">{timeAgo(opp.created_at)}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                {wasDismissed ? (
+                                  <span className="text-[11px] text-[#bbb] font-medium">Dismissed</span>
+                                ) : (
+                                  <>
+                                    <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                                      <path d="M1 5l3.5 3.5L11 1" stroke="#00C896" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                    <span className="text-[11px] text-[#00C896] font-medium">Answered</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-[13px] text-[#555] mt-2 leading-snug">{opp.title}</p>
+                            <a href={opp.url} target="_blank" rel="noopener noreferrer"
+                              className="text-[11px] text-[#bbb] hover:text-[#00C896] transition-colors mt-1 inline-block">
+                              View question →
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="mt-4 pt-4 border-t border-[#f3f4f6]">
+                <p className="text-[12px] text-[#bbb]">
+                  {visibleQuoraOpps.length} to action · {completedQuoraOpps.length} completed · Daily scan at 12pm UTC · Always review before posting
                 </p>
               </div>
             </div>

@@ -15,6 +15,7 @@ export default async function AdminPage() {
     { data: addressed },
     { data: twitterOpps },
     { data: twitterAddressed },
+    { data: quoraOpps },
   ] = await Promise.all([
     supabase
       .from('simulator_submissions')
@@ -42,6 +43,11 @@ export default async function AdminPage() {
       .select('*')
       .limit(400),
     Promise.resolve({ data: [] }),
+    // Fetch all quora rows — filter active/completed client-side
+    supabase
+      .from('quora_opportunities')
+      .select('*')
+      .limit(400),
   ]);
 
   return (
@@ -52,6 +58,7 @@ export default async function AdminPage() {
       addressed={addressed || []}
       twitterOpps={twitterOpps || []}
       twitterAddressed={twitterAddressed || []}
+      quoraOpps={quoraOpps || []}
     />
   );
 }
