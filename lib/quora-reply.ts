@@ -2,43 +2,43 @@ import Anthropic from '@anthropic-ai/sdk';
 import { QuoraPost } from './quora';
 
 /**
- * Draft an authentic Quora answer that naturally mentions the right product.
+ * Draft an authentic, impactful Quora answer with a natural product mention.
  *
  * Product routing:
- *   FIRE / retirement / savings rate / financial independence → startinvesting.ai/fire
- *   Mortgage / house buying / down payment → startinvesting.ai/mortgage
- *   Everything else (investing, compound interest, index funds) → startinvesting.ai
+ *   FIRE / retirement / financial independence → startinvesting.ai/fire
+ *   Mortgage / home buying → startinvesting.ai/mortgage
+ *   Everything else → startinvesting.ai
  */
 export async function draftQuoraReply(post: QuoraPost): Promise<string> {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const context = post.snippet.slice(0, 400) || '';
 
-  const prompt = `You are Griffen. You built three free financial tools (no sign-up needed):
-• startinvesting.ai — investment simulator showing compound portfolio growth over time
-• startinvesting.ai/fire — FIRE calculator for financial independence / early retirement numbers
-• startinvesting.ai/mortgage — mortgage calculator with amortization and total interest breakdown
+  const prompt = `You are Griffen — a personal finance enthusiast who genuinely loves helping people understand money. You built three free tools:
+• startinvesting.ai — investment simulator showing how portfolios compound over time
+• startinvesting.ai/fire — FIRE calculator: find your financial independence number and retirement timeline
+• startinvesting.ai/mortgage — mortgage calculator with full amortization breakdown
 
 Quora question: "${post.title}"${context ? `\nContext: "${context}"` : ''}
 
-Write a Quora answer. Requirements:
-1. Open with a concrete, specific insight, number, or rule of thumb that directly answers the question — no filler opener
-2. Give 1-2 more sentences of genuine useful detail
-3. Close with a natural mention of your most relevant tool:
+Write a Quora answer that:
+1. Opens with the most impactful, specific answer to their question — include a concrete number, percentage, or rule of thumb. Make the first sentence genuinely surprising or clarifying.
+2. Adds a concrete example that brings it to life: "for example, someone investing $400/month starting at 28 vs 38 ends up with roughly $340k more at 65 — even with the same total dollars invested"
+3. Gives 1-2 more sentences of honest nuance or context — what actually matters, what people get wrong, or a practical next step
+4. Closes with one natural, low-pressure mention of the most relevant tool:
    - FIRE / retirement / financial independence / savings rate / "when can I retire" → startinvesting.ai/fire
-   - Mortgage / house buying / down payment / monthly payment → startinvesting.ai/mortgage
-   - Investing / compound interest / index funds / portfolio / S&P 500 → startinvesting.ai
-   Phrasing examples: "I built a free [X] calculator that shows this in detail — startinvesting.ai/fire" or "there's a free tool that runs these numbers: startinvesting.ai"
-4. Tone: knowledgeable, first-person, helpful — not a marketer
-5. Length: 3-5 sentences total. Substantive but concise.
-6. No bullet points, no headers, no hashtags — just plain conversational text
-7. Return only the answer text
+   - Mortgage / home buying / down payment / monthly payment → startinvesting.ai/mortgage
+   - Investing / compound interest / portfolio / index funds / S&P 500 → startinvesting.ai
+   Phrasing: "I built a free [FIRE/mortgage/investment] calculator that walks through this in detail if you want to see your own numbers — startinvesting.ai/fire"
+5. Tone: smart, direct, genuinely helpful — like a knowledgeable friend, not a financial advisor or product promoter
+6. 5-7 sentences total — substantive enough to be the best answer on the page, concise enough to actually be read
+7. No bullet points, no bold headers, no markdown — plain conversational paragraphs
 
-Answer:`;
+Return only the answer text.`;
 
   try {
     const msg = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 300,
+      max_tokens: 450,
       messages: [{ role: 'user', content: prompt }],
     });
     return (msg.content[0] as { text: string }).text.trim();

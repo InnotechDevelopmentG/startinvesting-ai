@@ -2,37 +2,37 @@ import Anthropic from '@anthropic-ai/sdk';
 import { TwitterPost } from './twitter';
 
 /**
- * Draft an authentic reply to a tweet that naturally mentions the right product.
+ * Draft an authentic, impactful Twitter reply with a natural product mention.
  *
  * Product routing:
- *   FIRE / retirement / savings rate / financial independence → startinvesting.ai/fire
- *   Mortgage / house buying / down payment → startinvesting.ai/mortgage
- *   Everything else (investing, compound interest, index funds) → startinvesting.ai
+ *   FIRE / retirement / financial independence → startinvesting.ai/fire
+ *   Mortgage / home buying → startinvesting.ai/mortgage
+ *   Everything else → startinvesting.ai
  */
 export async function draftReply(post: TwitterPost): Promise<string> {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const context = post.snippet.slice(0, 400) || '';
 
-  const prompt = `You are Griffen. You built three free financial tools (no sign-up needed):
-• startinvesting.ai — investment simulator: enter age, contributions, timeline and risk to see compound portfolio growth
-• startinvesting.ai/fire — FIRE calculator: find your financial independence number and when you can retire early
-• startinvesting.ai/mortgage — mortgage calculator: monthly payment, amortization, and total interest breakdown
+  const prompt = `You are Griffen — knowledgeable about personal finance. You built three free tools:
+• startinvesting.ai — investment simulator showing compound portfolio growth
+• startinvesting.ai/fire — FIRE calculator for financial independence / early retirement
+• startinvesting.ai/mortgage — mortgage calculator with amortization breakdown
 
 Tweet from ${post.handle}: "${post.title}"${context ? `\nContext: "${context}"` : ''}
 
-Write a Twitter reply. Requirements:
-1. Open with one concrete, useful insight or number that directly helps the person — no filler ("Great question!", "Totally!", etc.)
-2. Close with a natural, low-key mention of the most relevant tool:
-   - FIRE / retirement / financial independence / savings rate / "when can I retire" → startinvesting.ai/fire
-   - Mortgage / buying a house / down payment / monthly payment → startinvesting.ai/mortgage
-   - Investing / compound interest / index funds / portfolio / S&P 500 → startinvesting.ai
-   Format: "I built a free [X] calculator if it helps — [url]" or "there's a free [X] tool at [url]" or similar natural phrasing
-3. Tone: direct, knowledgeable friend — not a marketer. First person. Conversational.
-4. Strictly under 240 characters total (Twitter limit — count carefully)
-5. No hashtags
-6. Return only the reply text, no quotes
+Write a Twitter reply that:
+1. Opens with a striking, specific number or insight that stops someone scrolling — make it concrete (e.g. "Starting at 25 vs 35 with $500/month means ~$400k more at 65, even at the same total contribution")
+2. Adds 1-2 sentences of context that makes the insight land — explain the "why" briefly
+3. Closes with a single very casual, light product mention — almost an afterthought, not a pitch:
+   - FIRE / retirement / financial independence / savings rate → startinvesting.ai/fire
+   - Mortgage / home buying / down payment → startinvesting.ai/mortgage
+   - Investing / compound interest / portfolio / index funds → startinvesting.ai
+   Phrasing: "built a free [X] calculator for this → startinvesting.ai" or "free tool if you want to see your numbers: startinvesting.ai/fire"
+4. Feels like a real person with genuine expertise sharing something useful — not promotional
+5. Strictly under 260 characters total (count every character — Twitter's limit is 280, keep buffer)
+6. No hashtags, no filler openers ("Great point!", "Totally!", etc.)
 
-Reply:`;
+Return only the reply text.`;
 
   try {
     const msg = await anthropic.messages.create({
