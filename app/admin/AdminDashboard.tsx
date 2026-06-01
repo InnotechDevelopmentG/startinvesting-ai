@@ -279,8 +279,9 @@ export default function AdminDashboard({
       if (!res.ok || data.error) {
         setTwScanResult(`Error: ${data.error ?? 'scan failed'}`);
       } else {
-        setTwScanResult(`Fetched ${data.fetched ?? 0} · ${data.unique ?? 0} unique · added ${data.inserted} new opportunit${data.inserted !== 1 ? 'ies' : 'y'}`);
-        if ((data.inserted ?? 0) > 0) router.refresh();
+        const inserted = data.inserted ?? 0;
+        setTwScanResult(`Fetched ${data.fetched ?? 0} · ${data.unique ?? 0} unique · added ${inserted} new — reloading…`);
+        setTimeout(() => window.location.reload(), 1200);
       }
     } catch {
       setTwScanResult('Error: could not reach scan endpoint');
