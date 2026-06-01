@@ -34,6 +34,14 @@ interface SerperResponse {
   organic?: SerperResult[];
 }
 
+// Ultra-fresh queries — run with qdr:h (past hour). Catch posts the moment they're hot.
+const ULTRA_FRESH_QUERIES = [
+  'site:x.com "how much should I invest" OR "how much to invest"',
+  'site:x.com "when can I retire" OR "FIRE number" OR "financial independence"',
+  'site:x.com "compound interest" investing',
+  'site:x.com mortgage "can I afford" OR "first home"',
+];
+
 // Fresh queries — run with qdr:d (past 24h). Catch questions asked today.
 const FRESH_QUERIES = [
   'site:x.com "how much should I invest" per month OR per year',
@@ -42,6 +50,7 @@ const FRESH_QUERIES = [
   'site:x.com mortgage "can I afford" OR "how much house" first home',
   'site:x.com "just started investing" OR "new to investing" index fund help',
   'site:x.com "financial independence" "retire early" how much save',
+  'site:x.com "savings rate" retire early investing plan',
 ];
 
 // Broad queries — run with qdr:w (past week). High engagement = Google indexed them.
@@ -119,8 +128,9 @@ export function scorePost(post: TwitterPost, position = 10, fresh = false): numb
   // ── Recency: snowflake timestamp ─────────────────────────────────────────
   // Fresh posts are actively being read — best window to reply is within 12h
   const ageHours = (Date.now() / 1000 - post.created_utc) / 3600;
-  if (ageHours < 3) score += 10;
-  else if (ageHours < 12) score += 7;
+  if (ageHours < 1) score += 15;
+  else if (ageHours < 3) score += 11;
+  else if (ageHours < 12) score += 8;
   else if (ageHours < 24) score += 5;
   else if (ageHours < 72) score += 2;
 
@@ -136,7 +146,7 @@ export function scorePost(post: TwitterPost, position = 10, fresh = false): numb
 
 async function serperSearch(
   query: string,
-  tbs: 'qdr:d' | 'qdr:w' = 'qdr:w'
+  tbs: 'qdr:h' | 'qdr:d' | 'qdr:w' = 'qdr:w'
 ): Promise<{ post: TwitterPost; position: number }[]> {
   const apiKey = process.env.SERPER_API_KEY;
   if (!apiKey) throw new Error('Missing SERPER_API_KEY');
@@ -184,7 +194,23 @@ export async function getAllTwitterOpportunities(): Promise<TwitterPost[]> {
   const seen = new Set<string>();
   const scored: { post: TwitterPost; score: number }[] = [];
 
-  // Run fresh queries first (past 24h) — these get the `fresh` scoring bonus
+  // Ultra-fresh queries (past hour) — highest reply value
+  for (const query of ULTRA_FRESH_QUERIES) {
+    try {
+      const results = await serperSearch(query, 'qdr:h');
+      for (const { post, position } of results) {
+        if (seen.has(post.id)) continue;
+        seen.add(post.id);
+        const score = scorePost(post, position, true);
+        scored.push({ post: { ...post, score }, score });
+      }
+    } catch {
+      // continue on individual query failure
+    }
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  // Fresh queries (past 24h) — these get the `fresh` scoring bonus
   for (const query of FRESH_QUERIES) {
     try {
       const results = await serperSearch(query, 'qdr:d');

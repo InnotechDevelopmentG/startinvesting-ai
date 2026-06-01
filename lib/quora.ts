@@ -27,7 +27,7 @@ interface SerperResponse {
   organic?: SerperResult[];
 }
 
-// Fresh queries — past month. New questions where you can be first to answer.
+// Recent queries — past week. New questions where you can be among first to answer.
 const FRESH_QUERIES = [
   'site:quora.com "how much should I invest" per month',
   'site:quora.com "FIRE number" OR "financial independence number" retire early',
@@ -35,6 +35,7 @@ const FRESH_QUERIES = [
   'site:quora.com mortgage "how much can I afford" first home buying',
   'site:quora.com "index fund" beginner "how much" invest',
   'site:quora.com "when can I retire" savings investments',
+  'site:quora.com "savings rate" retire early financial independence',
 ];
 
 // Broad queries — all time. High-traffic evergreen questions.
@@ -100,8 +101,8 @@ export function scorePost(post: QuoraPost, position = 10, fresh = false): number
   else if (position <= 5) score += 4;
   else if (position <= 7) score += 2;
 
-  // Fresh question bonus — can be first answer
-  if (fresh) score += 5;
+  // Fresh question bonus — can be among first answers
+  if (fresh) score += 7;
 
   // ── Penalise low-opportunity content ────────────────────────────────────
   if (/\b(sponsored|ad\b|advertisement)\b/i.test(text)) score -= 8;
@@ -158,10 +159,10 @@ export async function getAllQuoraOpportunities(): Promise<QuoraPost[]> {
   const seen = new Set<string>();
   const scored: { post: QuoraPost; score: number }[] = [];
 
-  // Fresh queries first (past month) — can be first answer
+  // Fresh queries first (past week) — among first to answer
   for (const query of FRESH_QUERIES) {
     try {
-      const results = await serperSearch(query, 'qdr:m');
+      const results = await serperSearch(query, 'qdr:w');
       for (const { post, position } of results) {
         if (seen.has(post.id)) continue;
         seen.add(post.id);
