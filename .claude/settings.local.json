@@ -84,7 +84,8 @@
       "Bash(curl -sL \"https://startinvesting.ai/api/admin/seed-evergreen\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
       "Bash(find ~ -name auth.json -path */vercel*)",
-      "Bash(curl -sL \"https://startinvesting.ai/api/admin/seed-evergreen?secret=seed-evergreen-once\")"
+      "Bash(curl -sL \"https://startinvesting.ai/api/admin/seed-evergreen?secret=seed-evergreen-once\")",
+      "mcp__scheduled-tasks__create_scheduled_task"
     ]
   }
 }

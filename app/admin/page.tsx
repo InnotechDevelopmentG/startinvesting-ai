@@ -8,7 +8,14 @@ export const fetchCache = 'force-no-store';
 export default async function AdminPage() {
   const supabase = getSupabaseAdminClient();
 
-  const [{ data: submissions }, { data: subscribers }, { data: opportunities }, { data: addressed }] = await Promise.all([
+  const [
+    { data: submissions },
+    { data: subscribers },
+    { data: opportunities },
+    { data: addressed },
+    { data: twitterOpps },
+    { data: twitterAddressed },
+  ] = await Promise.all([
     supabase
       .from('simulator_submissions')
       .select('*')
@@ -17,8 +24,6 @@ export default async function AdminPage() {
       .from('newsletter_subscribers')
       .select('id, email, created_at')
       .order('created_at', { ascending: false }),
-    // Active: not dismissed, not addressed — newest first
-    // Use 'or' to handle both false and null values
     supabase
       .from('reddit_opportunities')
       .select('*')
@@ -26,9 +31,21 @@ export default async function AdminPage() {
       .or('addressed.is.null,addressed.eq.false')
       .order('created_at', { ascending: false })
       .limit(200),
-    // Completed: addressed=true OR dismissed=true
     supabase
       .from('reddit_opportunities')
+      .select('*')
+      .or('addressed.eq.true,dismissed.eq.true')
+      .order('created_at', { ascending: false })
+      .limit(200),
+    supabase
+      .from('twitter_opportunities')
+      .select('*')
+      .or('dismissed.is.null,dismissed.eq.false')
+      .or('addressed.is.null,addressed.eq.false')
+      .order('created_at', { ascending: false })
+      .limit(200),
+    supabase
+      .from('twitter_opportunities')
       .select('*')
       .or('addressed.eq.true,dismissed.eq.true')
       .order('created_at', { ascending: false })
@@ -41,6 +58,8 @@ export default async function AdminPage() {
       subscribers={subscribers || []}
       opportunities={opportunities || []}
       addressed={addressed || []}
+      twitterOpps={twitterOpps || []}
+      twitterAddressed={twitterAddressed || []}
     />
   );
 }

@@ -38,7 +38,7 @@ interface Opportunity {
 }
 
 type SortKey = keyof Submission;
-type Tab = 'leads' | 'subscribers' | 'reddit';
+type Tab = 'leads' | 'subscribers' | 'reddit' | 'twitter';
 
 const RISK_STYLE: Record<string, { bg: string; text: string; label: string }> = {
   conservative: { bg: '#f3f4f6', text: '#555', label: 'Steady' },
@@ -82,11 +82,15 @@ export default function AdminDashboard({
   subscribers,
   opportunities,
   addressed,
+  twitterOpps,
+  twitterAddressed,
 }: {
   submissions: Submission[];
   subscribers: Subscriber[];
   opportunities: Opportunity[];
   addressed: Opportunity[];
+  twitterOpps: Opportunity[];
+  twitterAddressed: Opportunity[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('leads');
@@ -100,6 +104,13 @@ export default function AdminDashboard({
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
+
+  // Twitter state
+  const [twDismissed, setTwDismissed] = useState<Set<string>>(new Set());
+  const [twAddressedIds, setTwAddressedIds] = useState<Set<string>>(new Set());
+  const [twScanning, setTwScanning] = useState(false);
+  const [twScanResult, setTwScanResult] = useState<string | null>(null);
+  const [twShowCompleted, setTwShowCompleted] = useState(false);
 
   // ── Stats ───────────────────────────────────────────────────────────────
   const now = new Date();
@@ -150,6 +161,17 @@ export default function AdminDashboard({
   const completedOpps = useMemo(
     () => [...addressed, ...opportunities.filter(o => addressedIds.has(o.id) || dismissed.has(o.id))],
     [addressed, opportunities, addressedIds, dismissed]
+  );
+
+  // ── Twitter opportunities ────────────────────────────────────────────────
+  const visibleTwOpps = useMemo(
+    () => twitterOpps.filter(o => !twDismissed.has(o.id) && !twAddressedIds.has(o.id)),
+    [twitterOpps, twDismissed, twAddressedIds]
+  );
+
+  const completedTwOpps = useMemo(
+    () => [...twitterAddressed, ...twitterOpps.filter(o => twAddressedIds.has(o.id) || twDismissed.has(o.id))],
+    [twitterAddressed, twitterOpps, twAddressedIds, twDismissed]
   );
 
   function toggleSort(key: SortKey) {
@@ -217,14 +239,53 @@ export default function AdminDashboard({
         const fetched = data.fetched ?? data.found ?? 0;
         const unique = data.unique ?? fetched;
         setScanResult(`Fetched ${fetched} posts · ${unique} unique · added ${data.inserted} new opportunit${data.inserted !== 1 ? 'ies' : 'y'}`);
-        if ((data.inserted ?? 0) > 0) {
-          router.refresh();
-        }
+        if ((data.inserted ?? 0) > 0) router.refresh();
       }
     } catch {
       setScanResult('Error: could not reach scan endpoint');
     } finally {
       setScanning(false);
+    }
+  }
+
+  async function handleTwDismiss(id: string) {
+    setTwDismissed(prev => { const next = new Set(Array.from(prev)); next.add(id); return next; });
+    try {
+      const res = await fetch('/api/admin/twitter-dismiss', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      if (!res.ok) setTwDismissed(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+      else router.refresh();
+    } catch {
+      setTwDismissed(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+    }
+  }
+
+  async function handleTwAddress(id: string) {
+    setTwAddressedIds(prev => { const next = new Set(Array.from(prev)); next.add(id); return next; });
+    try {
+      const res = await fetch('/api/admin/twitter-address', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      if (!res.ok) setTwAddressedIds(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+      else router.refresh();
+    } catch {
+      setTwAddressedIds(prev => { const next = new Set(Array.from(prev)); next.delete(id); return next; });
+    }
+  }
+
+  async function handleTwScan() {
+    setTwScanning(true);
+    setTwScanResult(null);
+    try {
+      const res = await fetch('/api/admin/twitter-scan', { method: 'POST' });
+      const data = await res.json() as { success?: boolean; inserted?: number; fetched?: number; unique?: number; error?: string };
+      if (!res.ok || data.error) {
+        setTwScanResult(`Error: ${data.error ?? 'scan failed'}`);
+      } else {
+        setTwScanResult(`Fetched ${data.fetched ?? 0} · ${data.unique ?? 0} unique · added ${data.inserted} new opportunit${data.inserted !== 1 ? 'ies' : 'y'}`);
+        if ((data.inserted ?? 0) > 0) router.refresh();
+      }
+    } catch {
+      setTwScanResult('Error: could not reach scan endpoint');
+    } finally {
+      setTwScanning(false);
     }
   }
 
@@ -304,6 +365,7 @@ export default function AdminDashboard({
                 { key: 'leads',       label: 'Simulator leads',        count: submissions.length },
                 { key: 'subscribers', label: 'Newsletter subscribers',  count: subscribers.length },
                 { key: 'reddit',      label: 'Reddit opportunities',    count: visibleOpps.length },
+                { key: 'twitter',     label: 'X/Twitter opportunities', count: visibleTwOpps.length },
               ] as { key: Tab; label: string; count: number }[]).map(({ key, label, count }) => (
                 <button
                   key={key}
@@ -339,6 +401,22 @@ export default function AdminDashboard({
                   className="px-4 py-2 text-[13px] font-medium rounded-lg bg-[#111] text-white hover:bg-[#333] disabled:opacity-50 transition-colors whitespace-nowrap"
                 >
                   {scanning ? 'Scanning Reddit…' : 'Scan Reddit now'}
+                </button>
+              </div>
+            )}
+            {tab === 'twitter' && (
+              <div className="flex items-center gap-3">
+                {twScanResult && (
+                  <span className={`text-[12px] ${twScanResult.startsWith('Error') ? 'text-red-500' : 'text-[#00C896]'}`}>
+                    {twScanResult}
+                  </span>
+                )}
+                <button
+                  onClick={handleTwScan}
+                  disabled={twScanning}
+                  className="px-4 py-2 text-[13px] font-medium rounded-lg bg-[#111] text-white hover:bg-[#333] disabled:opacity-50 transition-colors whitespace-nowrap"
+                >
+                  {twScanning ? 'Scanning X…' : 'Scan X now'}
                 </button>
               </div>
             )}
@@ -577,6 +655,135 @@ export default function AdminDashboard({
               <div className="mt-4 pt-4 border-t border-[#f3f4f6]">
                 <p className="text-[12px] text-[#bbb]">
                   {visibleOpps.length} to action · {completedOpps.length} completed · Auto-scans daily at 10am UTC · Always review before posting
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── X/Twitter opportunities ── */}
+          {tab === 'twitter' && (
+            <div className="p-5">
+              {visibleTwOpps.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
+                  <div className="w-12 h-12 rounded-full bg-[#f3f4f6] flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 1200 1227" fill="none">
+                      <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.163 519.284ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.828Z" fill="#9ca3af"/>
+                    </svg>
+                  </div>
+                  <p className="text-[15px] font-medium text-[#111]">No X opportunities yet</p>
+                  <p className="text-[13px] text-[#888]">Click &ldquo;Scan X now&rdquo; to find relevant tweets, or wait for the daily scan.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {visibleTwOpps.map((opp) => (
+                    <div key={opp.id} className="rounded-xl border border-[#f3f4f6] p-5 hover:border-[#e5e7eb] transition-colors">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[11px] font-semibold text-white bg-black px-2.5 py-1 rounded-full">
+                            {(opp as unknown as { handle: string }).handle || 'X'}
+                          </span>
+                          <span className="text-[11px] text-[#bbb]">{timeAgo(opp.created_at)}</span>
+                        </div>
+                        <a
+                          href={opp.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-shrink-0 flex items-center gap-1 text-[12px] text-[#888] hover:text-[#00C896] transition-colors"
+                        >
+                          Open tweet
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                            <path d="M1 9L9 1M9 1H4M9 1v5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </a>
+                      </div>
+                      <p className="text-[14px] font-semibold text-[#111] leading-snug mb-2">{opp.title}</p>
+                      {opp.body_snippet && (
+                        <p className="text-[12px] text-[#888] leading-relaxed mb-4 line-clamp-2">{opp.body_snippet}</p>
+                      )}
+                      <div className="border-t border-[#f3f4f6] mb-4" />
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#aaa] mb-2">Drafted reply</p>
+                      <div className="bg-[#fafafa] rounded-lg px-4 py-3 mb-4">
+                        <p className="text-[13px] text-[#444] leading-relaxed whitespace-pre-wrap">{opp.drafted_reply}</p>
+                        <p className="text-[11px] text-[#bbb] mt-2">{opp.drafted_reply?.length ?? 0} / 280 chars</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleCopy(opp.id, opp.drafted_reply)}
+                          className="px-4 py-2 rounded-lg text-[13px] font-medium bg-[#00C896] text-white hover:bg-[#00b386] transition-colors"
+                        >
+                          {copied === opp.id ? 'Copied!' : 'Copy reply'}
+                        </button>
+                        <a
+                          href={opp.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => handleTwAddress(opp.id)}
+                          className="px-4 py-2 rounded-lg text-[13px] font-medium border border-[#e5e7eb] text-[#555] hover:border-[#00C896] hover:text-[#00C896] transition-colors"
+                        >
+                          Go reply on X →
+                        </a>
+                        <button
+                          onClick={() => handleTwDismiss(opp.id)}
+                          className="ml-auto px-4 py-2 rounded-lg text-[13px] text-[#bbb] hover:text-[#888] transition-colors"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {completedTwOpps.length > 0 && (
+                <div className="mt-6 border-t border-[#f3f4f6] pt-4">
+                  <button
+                    onClick={() => setTwShowCompleted(v => !v)}
+                    className="flex items-center gap-2 text-[12px] font-medium text-[#aaa] hover:text-[#555] transition-colors mb-3"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                      style={{ transform: twShowCompleted ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+                      <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Completed ({completedTwOpps.length})
+                  </button>
+                  {twShowCompleted && (
+                    <div className="flex flex-col gap-3">
+                      {completedTwOpps.map(opp => {
+                        const wasDismissed = twDismissed.has(opp.id) || opp.dismissed;
+                        return (
+                          <div key={opp.id} className="rounded-xl border border-[#f3f4f6] bg-[#fafafa] p-4 opacity-60">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-semibold text-white bg-black px-2 py-0.5 rounded-full">{(opp as unknown as { handle: string }).handle || 'X'}</span>
+                                <span className="text-[11px] text-[#bbb]">{timeAgo(opp.created_at)}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                {wasDismissed ? (
+                                  <span className="text-[11px] text-[#bbb] font-medium">Dismissed</span>
+                                ) : (
+                                  <>
+                                    <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                                      <path d="M1 5l3.5 3.5L11 1" stroke="#00C896" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                    <span className="text-[11px] text-[#00C896] font-medium">Replied</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-[13px] text-[#555] mt-2 leading-snug">{opp.title}</p>
+                            <a href={opp.url} target="_blank" rel="noopener noreferrer"
+                              className="text-[11px] text-[#bbb] hover:text-[#00C896] transition-colors mt-1 inline-block">
+                              View tweet →
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="mt-4 pt-4 border-t border-[#f3f4f6]">
+                <p className="text-[12px] text-[#bbb]">
+                  {visibleTwOpps.length} to action · {completedTwOpps.length} completed · Always review before posting
                 </p>
               </div>
             </div>
