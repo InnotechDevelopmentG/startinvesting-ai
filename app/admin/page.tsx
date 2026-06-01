@@ -40,16 +40,9 @@ export default async function AdminPage() {
     supabase
       .from('twitter_opportunities')
       .select('*')
-      .or('dismissed.is.null,dismissed.eq.false')
-      .or('addressed.is.null,addressed.eq.false')
       .order('created_at', { ascending: false })
-      .limit(200),
-    supabase
-      .from('twitter_opportunities')
-      .select('*')
-      .or('addressed.eq.true,dismissed.eq.true')
-      .order('created_at', { ascending: false })
-      .limit(200),
+      .limit(400),
+    Promise.resolve({ data: [] }),
   ]);
 
   return (

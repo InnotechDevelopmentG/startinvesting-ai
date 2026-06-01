@@ -165,13 +165,13 @@ export default function AdminDashboard({
 
   // ── Twitter opportunities ────────────────────────────────────────────────
   const visibleTwOpps = useMemo(
-    () => twitterOpps.filter(o => !twDismissed.has(o.id) && !twAddressedIds.has(o.id)),
+    () => twitterOpps.filter(o => !o.dismissed && !o.addressed && !twDismissed.has(o.id) && !twAddressedIds.has(o.id)),
     [twitterOpps, twDismissed, twAddressedIds]
   );
 
   const completedTwOpps = useMemo(
-    () => [...twitterAddressed, ...twitterOpps.filter(o => twAddressedIds.has(o.id) || twDismissed.has(o.id))],
-    [twitterAddressed, twitterOpps, twAddressedIds, twDismissed]
+    () => twitterOpps.filter(o => o.dismissed || o.addressed || twAddressedIds.has(o.id) || twDismissed.has(o.id)),
+    [twitterOpps, twAddressedIds, twDismissed]
   );
 
   function toggleSort(key: SortKey) {
