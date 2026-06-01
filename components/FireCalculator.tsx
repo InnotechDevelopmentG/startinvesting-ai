@@ -234,7 +234,7 @@ export default function FireCalculator() {
               value={contribStr}
               onChange={onContrib}
               prefix="$"
-              hint="Amount you invest each month"
+              hint="In today's dollars — assumed to grow with inflation over time"
               tooltip="How much you invest every month. Even $200/month at 25 beats $1,000/month at 40 — consistency and time are everything."
             />
           </div>
