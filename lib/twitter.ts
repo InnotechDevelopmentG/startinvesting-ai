@@ -154,7 +154,7 @@ async function serperSearch(
   const res = await fetch('https://google.serper.dev/search', {
     method: 'POST',
     headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ q: query, num: 10, tbs }),
+    body: JSON.stringify({ q: query, num: 10, tbs, gl: 'us', hl: 'en', lr: 'lang_en' }),
   });
 
   if (!res.ok) return [];
@@ -175,11 +175,19 @@ async function serperSearch(
     const handle = extractHandle(url);
     if (!handle) continue;
 
+    const title = r.title.replace(/\s*on X$/i, '').replace(/\s*on Twitter$/i, '').trim();
+    const snippet = r.snippet ?? '';
+
+    // Skip non-English posts — reject if >20% of characters are non-ASCII
+    const combined = title + ' ' + snippet;
+    const nonAscii = (combined.match(/[^\x00-\x7F]/g) ?? []).length;
+    if (combined.length > 0 && nonAscii / combined.length > 0.2) continue;
+
     const post: TwitterPost = {
       id,
       handle,
-      title: r.title.replace(/\s*on X$/i, '').replace(/\s*on Twitter$/i, '').trim(),
-      snippet: r.snippet ?? '',
+      title,
+      snippet,
       url,
       created_utc: tweetIdToTimestamp(id),
       score: 0,
