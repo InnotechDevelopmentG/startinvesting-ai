@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 import ConditionalSiteHeader from '@/components/ConditionalSiteHeader';
 import ConditionalFooter from '@/components/ConditionalFooter';
 
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ConditionalSiteHeader />
         {children}
         <ConditionalFooter />
+        <Analytics />
       </body>
     </html>
   );
