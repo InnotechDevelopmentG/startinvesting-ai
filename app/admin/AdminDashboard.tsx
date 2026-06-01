@@ -278,11 +278,13 @@ export default function AdminDashboard({
       const data = await res.json() as { success?: boolean; inserted?: number; fetched?: number; unique?: number; error?: string; insertErrors?: string[] };
       if (!res.ok || data.error) {
         setTwScanResult(`Error: ${data.error ?? 'scan failed'}`);
+      } else if (data.insertErrors?.length) {
+        // Show insert error and DO NOT reload so user can read it
+        setTwScanResult(`Insert failed: ${data.insertErrors[0]}`);
       } else {
         const inserted = data.inserted ?? 0;
-        const errSuffix = data.insertErrors?.length ? ` · insert error: ${data.insertErrors[0]}` : '';
-        setTwScanResult(`Fetched ${data.fetched ?? 0} · ${data.unique ?? 0} unique · added ${inserted}${errSuffix} — reloading…`);
-        setTimeout(() => window.location.reload(), 2000);
+        setTwScanResult(`Added ${inserted} new — reloading…`);
+        setTimeout(() => window.location.reload(), 1500);
       }
     } catch {
       setTwScanResult('Error: could not reach scan endpoint');

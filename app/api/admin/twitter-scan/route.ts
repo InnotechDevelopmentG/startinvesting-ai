@@ -39,8 +39,37 @@ Return only the reply text.`;
   }
 }
 
+async function insertPost(supabase: ReturnType<typeof import('@/lib/supabase-admin').getSupabaseAdminClient>, post: TwitterPost, drafted_reply: string): Promise<string | null> {
+  // Try full insert with all columns
+  const { error } = await supabase.from('twitter_opportunities').insert({
+    tweet_id: post.id,
+    handle: post.handle,
+    title: post.title,
+    url: post.url,
+    body_snippet: post.snippet.slice(0, 400),
+    drafted_reply,
+    score: post.score,
+    tweet_created_at: new Date(post.created_utc * 1000).toISOString(),
+  });
+
+  if (!error) return null;
+
+  // If full insert fails (e.g. score/tweet_created_at columns don't exist yet),
+  // fall back to core columns only
+  const { error: fallbackError } = await supabase.from('twitter_opportunities').insert({
+    tweet_id: post.id,
+    handle: post.handle,
+    title: post.title,
+    url: post.url,
+    body_snippet: post.snippet.slice(0, 400),
+    drafted_reply,
+  });
+
+  if (!fallbackError) return null;
+  return fallbackError.message;
+}
+
 export async function POST(req: NextRequest) {
-  // Verify admin cookie (reuse same session check as other admin routes)
   const cookie = req.cookies.get('admin_session');
   if (!cookie?.value) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -53,8 +82,6 @@ export async function POST(req: NextRequest) {
 
     const allPosts = await getAllTwitterOpportunities();
     const candidates = allPosts.filter(p => !knownIds.has(p.id));
-
-    // Already sorted by score descending from getAllTwitterOpportunities
     const top = candidates.slice(0, 8);
 
     let inserted = 0;
@@ -62,21 +89,12 @@ export async function POST(req: NextRequest) {
     for (const post of top) {
       const drafted_reply = await draftReply(post);
       await new Promise(r => setTimeout(r, 300));
-      const { error } = await supabase.from('twitter_opportunities').insert({
-        tweet_id: post.id,
-        handle: post.handle,
-        title: post.title,
-        url: post.url,
-        body_snippet: post.snippet.slice(0, 400),
-        drafted_reply,
-        score: post.score,
-        tweet_created_at: new Date(post.created_utc * 1000).toISOString(),
-      });
-      if (!error) {
+      const err = await insertPost(supabase, post, drafted_reply);
+      if (!err) {
         inserted++;
       } else {
-        console.error('[twitter-scan] insert error:', error.message, error.details);
-        insertErrors.push(error.message);
+        console.error('[twitter-scan] insert error:', err);
+        insertErrors.push(err);
       }
     }
 
