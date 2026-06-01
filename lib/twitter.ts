@@ -36,37 +36,42 @@ interface SerperResponse {
 
 // Ultra-fresh queries — run with qdr:h (past hour). Catch posts the moment they're hot.
 const ULTRA_FRESH_QUERIES = [
-  'site:x.com "how much should I invest" OR "how much to invest"',
-  'site:x.com "when can I retire" OR "FIRE number" OR "financial independence"',
-  'site:x.com "compound interest" investing',
-  'site:x.com mortgage "can I afford" OR "first home"',
+  'site:x.com "how much should I invest" per month',
+  'site:x.com "FIRE number" OR "financial independence number"',
+  'site:x.com "compound interest" "how much will" investing',
+  'site:x.com "mortgage payment" OR "can I afford" first home',
 ];
 
 // Fresh queries — run with qdr:d (past 24h). Catch questions asked today.
 const FRESH_QUERIES = [
-  'site:x.com "how much should I invest" per month OR per year',
-  'site:x.com "FIRE number" OR "how much to retire" OR "when can I retire"',
-  'site:x.com "compound interest" investing start early question',
-  'site:x.com mortgage "can I afford" OR "how much house" first home',
-  'site:x.com "just started investing" OR "new to investing" index fund help',
-  'site:x.com "financial independence" "retire early" how much save',
-  'site:x.com "savings rate" retire early investing plan',
+  // Investment simulator
+  'site:x.com "how much will" invest compound interest grow years',
+  'site:x.com "just started investing" OR "new to investing" index fund monthly',
+  'site:x.com "investing $" per month compound interest retirement',
+  // FIRE calculator
+  'site:x.com "FIRE number" OR "what is my FIRE number" savings',
+  'site:x.com "when can I retire" savings rate monthly invest',
+  'site:x.com "coast FIRE" OR "lean FIRE" number how much save',
+  // Mortgage calculator
+  'site:x.com "can I afford" mortgage "monthly payment" first home',
+  'site:x.com "down payment" house saving "how much" OR "how long"',
 ];
 
 // Broad queries — run with qdr:w (past week). High engagement = Google indexed them.
 const BROAD_QUERIES = [
-  'site:x.com "how much should I invest" per month',
-  'site:x.com "how much do I need to retire" OR "FIRE number"',
-  'site:x.com "compound interest" investing "starting early" OR "start early"',
-  'site:x.com "index fund" beginner "how much" OR "per month"',
-  'site:x.com "coast FIRE" OR "lean FIRE" OR "fat FIRE" investing',
-  'site:x.com "4% rule" retirement portfolio withdraw',
-  'site:x.com mortgage "monthly payment" "first home" OR "first house"',
-  'site:x.com "invest $500" OR "invest $1000" per month returns',
-  'site:x.com "S&P 500" returns compound "per year" OR annual',
-  'site:x.com financial independence "retire early" calculator OR plan',
-  'site:x.com "how to retire early" savings rate index fund',
-  'site:x.com "down payment" house saving "how long" OR "how much"',
+  // Investment simulator
+  'site:x.com "how much should I invest" monthly compound interest',
+  'site:x.com "index fund" "per month" how much retire compound',
+  'site:x.com "compound interest" "start early" OR "starting at" age invest',
+  'site:x.com "invest early" compound interest retirement years',
+  // FIRE calculator
+  'site:x.com "how much do I need to retire" FIRE savings',
+  'site:x.com "4% rule" retirement withdrawal savings FIRE',
+  'site:x.com "coast FIRE" OR "fat FIRE" OR "lean FIRE" savings number',
+  'site:x.com "financial independence" "retire early" how much save monthly',
+  // Mortgage calculator
+  'site:x.com mortgage "monthly payment" "first home" calculator afford',
+  'site:x.com "down payment" saving first house how much afford',
 ];
 
 function extractHandle(url: string): string {

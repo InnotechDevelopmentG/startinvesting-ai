@@ -30,27 +30,36 @@ interface SerperResponse {
   organic?: SerperResult[];
 }
 
-// Fresh — past 24h. Questions asked today while thread is still active.
+// Fresh — past 24h. Active threads where a reply still gets seen.
 const FRESH_QUERIES = [
-  'site:reddit.com/r/personalfinance how much should I invest per month',
-  'site:reddit.com/r/investing compound interest how much start investing',
-  'site:reddit.com/r/financialindependence FIRE number retirement calculator',
-  'site:reddit.com/r/FirstTimeHomeBuyer mortgage calculator monthly payment afford',
-  'site:reddit.com/r/povertyfinance start investing little money index fund',
-  'site:reddit.com/r/Fire when can I retire savings rate',
-  'site:reddit.com/r/personalfinance should I invest or pay off debt',
+  // Investment simulator
+  'site:reddit.com/r/personalfinance how much should I invest per month index fund',
+  'site:reddit.com/r/investing how much will my money grow compound interest',
+  'site:reddit.com/r/Bogleheads how much invest monthly VOO S&P 500 retire',
+  // FIRE calculator
+  'site:reddit.com/r/financialindependence how much do I need to retire FIRE number',
+  'site:reddit.com/r/Fire what is my FIRE number savings rate retire early',
+  'site:reddit.com/r/leanfire how much need retire savings monthly',
+  // Mortgage calculator
+  'site:reddit.com/r/FirstTimeHomeBuyer how much can I afford mortgage monthly payment',
+  'site:reddit.com/r/personalfinance mortgage down payment how much first home',
 ];
 
-// Broad — past week. High-engagement posts still getting traction on Google.
+// Broad — past week. High-engagement posts still getting traction.
 const BROAD_QUERIES = [
-  'site:reddit.com/r/personalfinance start investing beginner index fund',
-  'site:reddit.com/r/investing how much per month S&P 500 beginner',
-  'site:reddit.com/r/financialindependence retirement calculator projection',
-  'site:reddit.com/r/Bogleheads how much invest monthly index fund',
-  'site:reddit.com/r/personalfinance mortgage first home down payment',
-  'site:reddit.com/r/investing compound interest retire early calculator',
-  'site:reddit.com/r/personalfinance pay off mortgage vs invest',
-  'site:reddit.com/r/Fire coast fire number retirement age',
+  // Investment simulator
+  'site:reddit.com/r/personalfinance index fund monthly contribution compound interest grow',
+  'site:reddit.com/r/investing S&P 500 how much per month grow retirement',
+  'site:reddit.com/r/povertyfinance start investing small amount compound interest',
+  // FIRE calculator
+  'site:reddit.com/r/financialindependence coast FIRE number savings rate calculator',
+  'site:reddit.com/r/Fire when can I retire savings rate financial independence',
+  'site:reddit.com/r/leanfire FIRE number how much need retire monthly',
+  'site:reddit.com/r/ChubbyFIRE retirement number savings rate compound',
+  // Mortgage calculator
+  'site:reddit.com/r/FirstTimeHomeBuyer mortgage payment calculator monthly afford',
+  'site:reddit.com/r/personalfinance should I pay off mortgage or invest',
+  'site:reddit.com/r/realestate mortgage calculator monthly payment afford first home',
 ];
 
 // Returns the Reddit post ID (e.g. "abc123") from a URL, or null if not a valid post URL
@@ -155,7 +164,7 @@ async function serperSearch(
       'X-API-KEY': apiKey,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ q: query, num: 10, tbs }),
+    body: JSON.stringify({ q: query, num: 10, tbs, gl: 'us', hl: 'en' }),
   });
 
   if (!res.ok) return [];

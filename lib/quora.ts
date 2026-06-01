@@ -29,27 +29,34 @@ interface SerperResponse {
 
 // Recent queries — past week. New questions where you can be among first to answer.
 const FRESH_QUERIES = [
-  'site:quora.com "how much should I invest" per month',
-  'site:quora.com "FIRE number" OR "financial independence number" retire early',
-  'site:quora.com "compound interest" investing start early how much',
-  'site:quora.com mortgage "how much can I afford" first home buying',
-  'site:quora.com "index fund" beginner "how much" invest',
-  'site:quora.com "when can I retire" savings investments',
-  'site:quora.com "savings rate" retire early financial independence',
+  // Investment simulator
+  'site:quora.com "how much should I invest per month"',
+  'site:quora.com "how much will" invest grow compound interest years',
+  'site:quora.com "index fund" how much per month retire compound',
+  // FIRE calculator
+  'site:quora.com "what is my FIRE number" OR "how much do I need to retire early"',
+  'site:quora.com "when can I retire" savings rate investments monthly',
+  'site:quora.com "coast FIRE" how much need stop contributing retire',
+  // Mortgage calculator
+  'site:quora.com "how much can I afford" mortgage monthly payment first home',
+  'site:quora.com "how long to save" down payment house first home',
 ];
 
 // Broad queries — all time. High-traffic evergreen questions.
 const BROAD_QUERIES = [
+  // Investment simulator
+  'site:quora.com "how much money will I have" invest per month compound interest',
+  'site:quora.com "compound interest" investing starting early age how much',
+  'site:quora.com "invest $" per month how much will I have retirement',
+  'site:quora.com "S&P 500" index fund how much invest per month retire',
+  // FIRE calculator
   'site:quora.com "how much money do I need to retire"',
-  'site:quora.com "4% rule" retirement safe withdrawal rate',
-  'site:quora.com "coast FIRE" OR "lean FIRE" OR "fat FIRE" financial independence',
-  'site:quora.com "S&P 500" compound interest average returns investing',
-  'site:quora.com "index fund" vs "individual stocks" beginner',
-  'site:quora.com "how long to save" down payment house first home',
-  'site:quora.com "savings rate" retire early financial independence',
-  'site:quora.com "compound interest" investing "starting at" age',
-  'site:quora.com mortgage calculator "monthly payment" afford',
-  'site:quora.com "how much should I save" income retirement',
+  'site:quora.com "4% rule" retirement safe withdrawal rate FIRE',
+  'site:quora.com "coast FIRE" OR "lean FIRE" OR "fat FIRE" financial independence number',
+  'site:quora.com "savings rate" retire early financial independence how much',
+  // Mortgage calculator
+  'site:quora.com mortgage calculator monthly payment amortization afford',
+  'site:quora.com "down payment" house mortgage how much save first home',
 ];
 
 function extractQuestionSlug(url: string): string | null {
@@ -117,7 +124,7 @@ async function serperSearch(
   const apiKey = process.env.SERPER_API_KEY;
   if (!apiKey) throw new Error('Missing SERPER_API_KEY');
 
-  const body: Record<string, unknown> = { q: query, num: 10 };
+  const body: Record<string, unknown> = { q: query, num: 10, gl: 'us', hl: 'en' };
   if (tbs) body.tbs = tbs;
 
   const res = await fetch('https://google.serper.dev/search', {
