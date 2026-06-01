@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     for (const post of top) {
       const drafted_reply = await draftReply(post);
       await new Promise(r => setTimeout(r, 300));
-      const { error } = await supabase.from('twitter_opportunities').insert({
+      const { error } = await supabase.from('twitter_opportunities').upsert({
         tweet_id: post.id,
         handle: post.handle,
         title: post.title,
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
         drafted_reply,
         score: post.score,
         tweet_created_at: new Date(post.created_utc * 1000).toISOString(),
-      });
+      }, { onConflict: 'tweet_id', ignoreDuplicates: true });
       if (!error) inserted++;
     }
 

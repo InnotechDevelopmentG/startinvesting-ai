@@ -6,8 +6,8 @@ import { draftReply } from '@/lib/twitter-reply';
 export const maxDuration = 60;
 
 async function insertPost(supabase: ReturnType<typeof import('@/lib/supabase-admin').getSupabaseAdminClient>, post: TwitterPost, drafted_reply: string): Promise<string | null> {
-  // Try full insert with all columns
-  const { error } = await supabase.from('twitter_opportunities').insert({
+  // Upsert — silently skips if tweet_id already exists (no duplicate key errors)
+  const { error } = await supabase.from('twitter_opportunities').upsert({
     tweet_id: post.id,
     handle: post.handle,
     title: post.title,
@@ -16,20 +16,19 @@ async function insertPost(supabase: ReturnType<typeof import('@/lib/supabase-adm
     drafted_reply,
     score: post.score,
     tweet_created_at: new Date(post.created_utc * 1000).toISOString(),
-  });
+  }, { onConflict: 'tweet_id', ignoreDuplicates: true });
 
   if (!error) return null;
 
-  // If full insert fails (e.g. score/tweet_created_at columns don't exist yet),
-  // fall back to core columns only
-  const { error: fallbackError } = await supabase.from('twitter_opportunities').insert({
+  // Fallback: try without optional columns in case they don't exist
+  const { error: fallbackError } = await supabase.from('twitter_opportunities').upsert({
     tweet_id: post.id,
     handle: post.handle,
     title: post.title,
     url: post.url,
     body_snippet: post.snippet.slice(0, 400),
     drafted_reply,
-  });
+  }, { onConflict: 'tweet_id', ignoreDuplicates: true });
 
   if (!fallbackError) return null;
   return fallbackError.message;
