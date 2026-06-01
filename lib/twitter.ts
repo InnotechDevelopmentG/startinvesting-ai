@@ -34,44 +34,37 @@ interface SerperResponse {
   organic?: SerperResult[];
 }
 
-// Ultra-fresh queries — run with qdr:h (past hour). Catch posts the moment they're hot.
-const ULTRA_FRESH_QUERIES = [
-  'site:x.com "how much should I invest" per month',
-  'site:x.com "FIRE number" OR "financial independence number"',
-  'site:x.com "compound interest" "how much will" investing',
-  'site:x.com "mortgage payment" OR "can I afford" first home',
-];
-
-// Fresh queries — run with qdr:d (past 24h). Catch questions asked today.
+// Fresh queries — past 24h. Broad natural language, no over-quoted phrases.
 const FRESH_QUERIES = [
   // Investment simulator
-  'site:x.com "how much will" invest compound interest grow years',
-  'site:x.com "just started investing" OR "new to investing" index fund monthly',
-  'site:x.com "investing $" per month compound interest retirement',
-  // FIRE calculator
-  'site:x.com "FIRE number" OR "what is my FIRE number" savings',
-  'site:x.com "when can I retire" savings rate monthly invest',
-  'site:x.com "coast FIRE" OR "lean FIRE" number how much save',
-  // Mortgage calculator
-  'site:x.com "can I afford" mortgage "monthly payment" first home',
-  'site:x.com "down payment" house saving "how much" OR "how long"',
+  'site:x.com investing compound interest monthly retirement savings',
+  'site:x.com index fund S&P 500 investing monthly compound growth',
+  'site:x.com started investing young compound interest savings retire',
+  'site:x.com personal finance investing 401k IRA monthly contribution',
+  // FIRE
+  'site:x.com FIRE financial independence retire early savings rate',
+  'site:x.com retire early how much save monthly FIRE number',
+  'site:x.com coast FIRE lean FIRE savings number retire',
+  // Mortgage
+  'site:x.com mortgage payment first home afford down payment',
+  'site:x.com first time home buyer mortgage afford monthly payment',
 ];
 
-// Broad queries — run with qdr:w (past week). High engagement = Google indexed them.
+// Broad queries — past week. High engagement = Google indexed them.
 const BROAD_QUERIES = [
   // Investment simulator
-  'site:x.com "how much should I invest" monthly compound interest',
-  'site:x.com "index fund" "per month" how much retire compound',
-  'site:x.com "compound interest" "start early" OR "starting at" age invest',
-  'site:x.com "invest early" compound interest retirement years',
-  // FIRE calculator
-  'site:x.com "how much do I need to retire" FIRE savings',
-  'site:x.com "4% rule" retirement withdrawal savings FIRE',
-  'site:x.com "coast FIRE" OR "fat FIRE" OR "lean FIRE" savings number',
-  'site:x.com "financial independence" "retire early" how much save monthly',
-  // Mortgage calculator
-  'site:x.com mortgage "monthly payment" "first home" calculator afford',
-  'site:x.com "down payment" saving first house how much afford',
+  'site:x.com compound interest investing early retirement index fund',
+  'site:x.com index fund VOO SPY monthly investing retire compound',
+  'site:x.com investing 500 month compound interest retire early',
+  'site:x.com personal finance index fund S&P 500 retire savings',
+  // FIRE
+  'site:x.com FIRE number financial independence retire early monthly',
+  'site:x.com 4% rule retirement withdrawal savings FIRE portfolio',
+  'site:x.com financial independence retire early savings rate compound',
+  'site:x.com coast FIRE fat FIRE lean FIRE savings number',
+  // Mortgage
+  'site:x.com mortgage monthly payment first home calculator afford',
+  'site:x.com buying first home down payment mortgage rate afford',
 ];
 
 function extractHandle(url: string): string {
@@ -151,7 +144,7 @@ export function scorePost(post: TwitterPost, position = 10, fresh = false): numb
 
 async function serperSearch(
   query: string,
-  tbs: 'qdr:h' | 'qdr:d' | 'qdr:w' = 'qdr:w'
+  tbs: 'qdr:d' | 'qdr:w' = 'qdr:w'
 ): Promise<{ post: TwitterPost; position: number }[]> {
   const apiKey = process.env.SERPER_API_KEY;
   if (!apiKey) throw new Error('Missing SERPER_API_KEY');
@@ -159,7 +152,7 @@ async function serperSearch(
   const res = await fetch('https://google.serper.dev/search', {
     method: 'POST',
     headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ q: query, num: 10, tbs, gl: 'us', hl: 'en', lr: 'lang_en' }),
+    body: JSON.stringify({ q: query, num: 10, tbs, gl: 'us', hl: 'en' }),
   });
 
   if (!res.ok) return [];
@@ -206,22 +199,6 @@ async function serperSearch(
 export async function getAllTwitterOpportunities(): Promise<TwitterPost[]> {
   const seen = new Set<string>();
   const scored: { post: TwitterPost; score: number }[] = [];
-
-  // Ultra-fresh queries (past hour) — highest reply value
-  for (const query of ULTRA_FRESH_QUERIES) {
-    try {
-      const results = await serperSearch(query, 'qdr:h');
-      for (const { post, position } of results) {
-        if (seen.has(post.id)) continue;
-        seen.add(post.id);
-        const score = scorePost(post, position, true);
-        scored.push({ post: { ...post, score }, score });
-      }
-    } catch {
-      // continue on individual query failure
-    }
-    await new Promise(r => setTimeout(r, 300));
-  }
 
   // Fresh queries (past 24h) — these get the `fresh` scoring bonus
   for (const query of FRESH_QUERIES) {
