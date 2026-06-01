@@ -40,7 +40,6 @@ export default async function AdminPage() {
     supabase
       .from('twitter_opportunities')
       .select('*')
-      .order('created_at', { ascending: false })
       .limit(400),
     Promise.resolve({ data: [] }),
   ]);

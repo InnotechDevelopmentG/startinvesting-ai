@@ -275,13 +275,14 @@ export default function AdminDashboard({
     setTwScanResult(null);
     try {
       const res = await fetch('/api/admin/twitter-scan', { method: 'POST' });
-      const data = await res.json() as { success?: boolean; inserted?: number; fetched?: number; unique?: number; error?: string };
+      const data = await res.json() as { success?: boolean; inserted?: number; fetched?: number; unique?: number; error?: string; insertErrors?: string[] };
       if (!res.ok || data.error) {
         setTwScanResult(`Error: ${data.error ?? 'scan failed'}`);
       } else {
         const inserted = data.inserted ?? 0;
-        setTwScanResult(`Fetched ${data.fetched ?? 0} · ${data.unique ?? 0} unique · added ${inserted} new — reloading…`);
-        setTimeout(() => window.location.reload(), 1200);
+        const errSuffix = data.insertErrors?.length ? ` · insert error: ${data.insertErrors[0]}` : '';
+        setTwScanResult(`Fetched ${data.fetched ?? 0} · ${data.unique ?? 0} unique · added ${inserted}${errSuffix} — reloading…`);
+        setTimeout(() => window.location.reload(), 2000);
       }
     } catch {
       setTwScanResult('Error: could not reach scan endpoint');

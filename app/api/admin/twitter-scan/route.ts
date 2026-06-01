@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
     const top = candidates.slice(0, 8);
 
     let inserted = 0;
+    const insertErrors: string[] = [];
     for (const post of top) {
       const drafted_reply = await draftReply(post);
       await new Promise(r => setTimeout(r, 300));
@@ -71,10 +72,21 @@ export async function POST(req: NextRequest) {
         score: post.score,
         tweet_created_at: new Date(post.created_utc * 1000).toISOString(),
       });
-      if (!error) inserted++;
+      if (!error) {
+        inserted++;
+      } else {
+        console.error('[twitter-scan] insert error:', error.message, error.details);
+        insertErrors.push(error.message);
+      }
     }
 
-    return NextResponse.json({ success: true, fetched: allPosts.length, unique: candidates.length, inserted });
+    return NextResponse.json({
+      success: true,
+      fetched: allPosts.length,
+      unique: candidates.length,
+      inserted,
+      ...(insertErrors.length > 0 && { insertErrors }),
+    });
   } catch (err) {
     console.error('[twitter-scan]', err);
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Unknown error' }, { status: 500 });
