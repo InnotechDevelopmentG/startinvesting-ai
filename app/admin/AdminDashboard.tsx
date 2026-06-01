@@ -111,6 +111,7 @@ export default function AdminDashboard({
   const [twScanning, setTwScanning] = useState(false);
   const [twScanResult, setTwScanResult] = useState<string | null>(null);
   const [twShowCompleted, setTwShowCompleted] = useState(false);
+  const [twDebugInfo, setTwDebugInfo] = useState<string | null>(null);
 
   // ── Stats ───────────────────────────────────────────────────────────────
   const now = new Date();
@@ -293,6 +294,22 @@ export default function AdminDashboard({
     }
   }
 
+  async function handleTwDebug() {
+    setTwDebugInfo('Loading…');
+    try {
+      const res = await fetch('/api/admin/twitter-debug');
+      const data = await res.json() as { rowCount: number; error: { message: string; code: string } | null; rows: Record<string, unknown>[] };
+      if (data.error) {
+        setTwDebugInfo(`DB error: ${data.error.code} — ${data.error.message}`);
+      } else {
+        const cols = data.rows[0] ? Object.keys(data.rows[0]).join(', ') : 'no rows';
+        setTwDebugInfo(`DB has ${data.rowCount} rows. Props: ${twitterOpps.length}. Visible: ${visibleTwOpps.length}. Columns: ${cols}`);
+      }
+    } catch {
+      setTwDebugInfo('Could not reach debug endpoint');
+    }
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#fafafa]">
@@ -409,19 +426,30 @@ export default function AdminDashboard({
               </div>
             )}
             {tab === 'twitter' && (
-              <div className="flex items-center gap-3">
-                {twScanResult && (
-                  <span className={`text-[12px] ${twScanResult.startsWith('Error') ? 'text-red-500' : 'text-[#00C896]'}`}>
-                    {twScanResult}
-                  </span>
+              <div className="flex flex-col items-end gap-1.5">
+                <div className="flex items-center gap-2">
+                  {twScanResult && (
+                    <span className={`text-[12px] ${twScanResult.startsWith('Error') || twScanResult.startsWith('Insert') ? 'text-red-500' : 'text-[#00C896]'}`}>
+                      {twScanResult}
+                    </span>
+                  )}
+                  <button
+                    onClick={handleTwDebug}
+                    className="px-3 py-1.5 text-[12px] font-medium rounded-lg border border-[#e5e7eb] text-[#888] hover:text-[#111] transition-colors whitespace-nowrap"
+                  >
+                    Debug DB
+                  </button>
+                  <button
+                    onClick={handleTwScan}
+                    disabled={twScanning}
+                    className="px-4 py-2 text-[13px] font-medium rounded-lg bg-[#111] text-white hover:bg-[#333] disabled:opacity-50 transition-colors whitespace-nowrap"
+                  >
+                    {twScanning ? 'Scanning X…' : 'Scan X now'}
+                  </button>
+                </div>
+                {twDebugInfo && (
+                  <p className="text-[11px] text-[#888] font-mono">{twDebugInfo}</p>
                 )}
-                <button
-                  onClick={handleTwScan}
-                  disabled={twScanning}
-                  className="px-4 py-2 text-[13px] font-medium rounded-lg bg-[#111] text-white hover:bg-[#333] disabled:opacity-50 transition-colors whitespace-nowrap"
-                >
-                  {twScanning ? 'Scanning X…' : 'Scan X now'}
-                </button>
               </div>
             )}
           </div>
