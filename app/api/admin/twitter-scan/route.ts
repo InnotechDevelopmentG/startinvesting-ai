@@ -39,25 +39,6 @@ Return only the reply text.`;
   }
 }
 
-function scorePost(post: TwitterPost): number {
-  const text = (post.title + ' ' + post.snippet).toLowerCase();
-  let score = 0;
-  if (/how much.*(invest|save|put)/i.test(text)) score += 4;
-  if (/compound interest/i.test(text)) score += 4;
-  if (/index fund|etf|voo|vti|spy/i.test(text)) score += 3;
-  if (/s&p 500|sp500/i.test(text)) score += 3;
-  if (/retire(ment)?|fire\b/i.test(text)) score += 2;
-  if (/calculator|simulator|projection/i.test(text)) score += 3;
-  if (/mortgage|down payment|first home/i.test(text)) score += 3;
-  if (/invest(ing)?/i.test(text)) score += 1;
-  if (/beginner|new to|just starting|getting started/i.test(text)) score += 2;
-  if (/per month|\/month|monthly/i.test(text)) score += 2;
-  if (/\?/.test(post.title)) score += 2;
-  if (/coast fire/i.test(text)) score += 3;
-  if (/4% rule|4 percent rule/i.test(text)) score += 3;
-  return score;
-}
-
 export async function POST(req: NextRequest) {
   // Verify admin cookie (reuse same session check as other admin routes)
   const cookie = req.cookies.get('admin_session');
@@ -73,13 +54,11 @@ export async function POST(req: NextRequest) {
     const allPosts = await getAllTwitterOpportunities();
     const candidates = allPosts.filter(p => !knownIds.has(p.id));
 
-    const top = candidates
-      .map(p => ({ post: p, score: scorePost(p) }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 8);
+    // Already sorted by score descending from getAllTwitterOpportunities
+    const top = candidates.slice(0, 8);
 
     let inserted = 0;
-    for (const { post } of top) {
+    for (const post of top) {
       const drafted_reply = await draftReply(post);
       await new Promise(r => setTimeout(r, 300));
       const { error } = await supabase.from('twitter_opportunities').insert({
@@ -89,6 +68,8 @@ export async function POST(req: NextRequest) {
         url: post.url,
         body_snippet: post.snippet.slice(0, 400),
         drafted_reply,
+        score: post.score,
+        tweet_created_at: new Date(post.created_utc * 1000).toISOString(),
       });
       if (!error) inserted++;
     }
