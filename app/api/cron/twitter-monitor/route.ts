@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
-import { getAllTwitterOpportunities, TwitterPost } from '@/lib/twitter';
-import Anthropic from '@anthropic-ai/sdk';
+import { getAllTwitterOpportunities } from '@/lib/twitter';
+import { draftReply } from '@/lib/twitter-reply';
 
 export const maxDuration = 60;
 
@@ -12,38 +12,6 @@ function isAuthorized(req: NextRequest): boolean {
   const authHeader = req.headers.get('authorization');
   const querySecret = req.nextUrl.searchParams.get('secret');
   return isVercelCron || authHeader === `Bearer ${cronSecret}` || querySecret === cronSecret;
-}
-
-async function draftReply(post: TwitterPost): Promise<string> {
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const prompt = `You're helping Griffen reply to a tweet. He built startinvesting.ai — a free investment simulator (no sign-up) that shows projected portfolio value based on age, contributions, timeline, and risk profile. It also has a FIRE calculator at startinvesting.ai/fire and mortgage calculator at startinvesting.ai/mortgage.
-
-Tweet from ${post.handle}: "${post.title}"
-Context: "${post.snippet.slice(0, 400)}"
-
-Write a GENUINE helpful reply for Twitter. Rules:
-- Lead with useful information or insight that directly addresses the tweet
-- Only mention startinvesting.ai if genuinely relevant
-- If you mention it, keep it brief: "I built a free calculator — startinvesting.ai"
-- For FIRE/retirement questions mention startinvesting.ai/fire
-- For mortgage questions mention startinvesting.ai/mortgage
-- Sound like a real person, not a marketer
-- Max 240 characters (Twitter limit)
-- Never start with "Great tweet" or filler
-- No hashtags
-
-Return only the reply text.`;
-
-  try {
-    const msg = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 200,
-      messages: [{ role: 'user', content: prompt }],
-    });
-    return (msg.content[0] as { text: string }).text.trim();
-  } catch {
-    return '';
-  }
 }
 
 export async function GET(req: NextRequest) {

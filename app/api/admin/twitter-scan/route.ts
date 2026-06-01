@@ -1,43 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { getAllTwitterOpportunities, TwitterPost } from '@/lib/twitter';
-import Anthropic from '@anthropic-ai/sdk';
+import { draftReply } from '@/lib/twitter-reply';
 
 export const maxDuration = 60;
-
-async function draftReply(post: TwitterPost): Promise<string> {
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const body = post.snippet.slice(0, 400) || '(no body)';
-
-  const prompt = `You're helping Griffen reply to a tweet. He built startinvesting.ai — a free investment simulator (no sign-up) that shows projected portfolio value based on age, contributions, timeline, and risk profile. It also has a FIRE calculator at startinvesting.ai/fire and mortgage calculator at startinvesting.ai/mortgage.
-
-Tweet from ${post.handle}: "${post.title}"
-Context: "${body}"
-
-Write a GENUINE helpful reply for Twitter. Rules:
-- Lead with useful information or insight that directly addresses the tweet
-- Only mention startinvesting.ai if genuinely relevant
-- If you mention it, keep it brief: "I built a free calculator — startinvesting.ai"
-- For FIRE/retirement questions mention startinvesting.ai/fire
-- For mortgage questions mention startinvesting.ai/mortgage
-- Sound like a real person, not a marketer
-- Max 240 characters (Twitter limit)
-- Never start with "Great tweet" or filler
-- No hashtags
-
-Return only the reply text.`;
-
-  try {
-    const msg = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 200,
-      messages: [{ role: 'user', content: prompt }],
-    });
-    return (msg.content[0] as { text: string }).text.trim();
-  } catch {
-    return '';
-  }
-}
 
 async function insertPost(supabase: ReturnType<typeof import('@/lib/supabase-admin').getSupabaseAdminClient>, post: TwitterPost, drafted_reply: string): Promise<string | null> {
   // Try full insert with all columns
