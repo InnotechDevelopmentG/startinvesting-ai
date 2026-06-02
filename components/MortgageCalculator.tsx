@@ -9,6 +9,7 @@ import {
   MortgageInputs,
 } from '@/lib/mortgage';
 import EmailCaptureModal from './EmailCaptureModal';
+import ReportEmailCapture from './ReportEmailCapture';
 import Tooltip from './Tooltip';
 import ShareButton from './ShareButton';
 
@@ -265,6 +266,33 @@ export default function MortgageCalculator() {
     const mos = months % 12;
     if (mos === 0) return `${yrs} yr${yrs !== 1 ? 's' : ''}`;
     return `${yrs} yr${yrs !== 1 ? 's' : ''} ${mos} mo`;
+  }
+
+  async function handleMortgageReportSubmit(email: string) {
+    const res = await fetch('/api/mortgage-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        homePrice: inputs.homePrice,
+        downPayment: inputs.downPayment,
+        annualRate: inputs.annualRate,
+        termYears: inputs.termYears,
+        totalMonthly: result.totalMonthly,
+        monthlyPI: result.monthlyPI,
+        monthlyTax: result.monthlyTax,
+        monthlyInsurance: result.monthlyInsurance,
+        monthlyPMI: result.monthlyPMI,
+        totalInterest: result.totalInterest,
+        totalCost: result.totalCost,
+        principal: result.principal,
+        requiresPMI: result.requiresPMI,
+      }),
+    });
+    if (!res.ok) {
+      const d = await res.json();
+      throw new Error(d.error || 'Something went wrong.');
+    }
   }
 
   const pmiRemovalDate = result.pmiRemovalMonth
@@ -553,6 +581,13 @@ export default function MortgageCalculator() {
               <span>Loan: {formatMortgageDollar(result.principal)}</span>
             </div>
           </div>
+
+          <ReportEmailCapture
+            title="Get your mortgage report"
+            description="Get your full payment breakdown, total interest, and loan summary sent straight to your inbox."
+            ctaLabel="Email me my mortgage report"
+            onSubmit={handleMortgageReportSubmit}
+          />
 
           {/* Disclaimer */}
           <p className="text-[11px] text-[#bbb] leading-relaxed px-1">

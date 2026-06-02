@@ -171,12 +171,6 @@ export default function StepEmail({ state, onNext }: StepEmailProps) {
         >
           {loading ? 'Sending…' : 'Get my free investing plan'}
         </button>
-        <button
-          onClick={onNext}
-          className="w-full py-3 text-[14px] text-[#aaa] hover:text-[#666] transition-colors"
-        >
-          Skip — just show me brokers
-        </button>
       </div>
 
       <p className="text-[11px] text-[#bbb] leading-relaxed">

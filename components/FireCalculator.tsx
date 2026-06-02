@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { calculateFIRE, fmtFireFull, fmtFireShort, FireInputs } from '@/lib/fire';
 import EmailCaptureModal from './EmailCaptureModal';
+import ReportEmailCapture from './ReportEmailCapture';
 import Tooltip from './Tooltip';
 import ShareButton from './ShareButton';
 
@@ -183,6 +184,31 @@ export default function FireCalculator() {
   const needMore = result.fireNumber > 0 && inputs.currentSavings < result.fireNumber
     ? result.fireNumber - inputs.currentSavings
     : 0;
+
+  async function handleFIREReportSubmit(email: string) {
+    const res = await fetch('/api/fire-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        fireNumber: result.fireNumber,
+        yearsToFIRE: result.yearsToFIRE,
+        fireAge: result.fireAge,
+        monthlyContribution: inputs.monthlyContribution,
+        annualSpending: inputs.annualSpending,
+        currentAge: inputs.currentAge,
+        currentSavings: inputs.currentSavings,
+        withdrawalRate: inputs.withdrawalRate,
+        realAnnualReturnPct: result.realAnnualReturnPct,
+        progressPercent: result.progressPercent,
+        coastFireNumber: result.coastFireNumber,
+      }),
+    });
+    if (!res.ok) {
+      const d = await res.json();
+      throw new Error(d.error || 'Something went wrong.');
+    }
+  }
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-10">
@@ -459,6 +485,13 @@ export default function FireCalculator() {
               ))}
             </div>
           </div>
+
+          <ReportEmailCapture
+            title="Get your FIRE report"
+            description="Get your personalized FIRE number, timeline, and step-by-step next steps sent straight to your inbox."
+            ctaLabel="Email me my FIRE report"
+            onSubmit={handleFIREReportSubmit}
+          />
 
           <p className="text-[11px] text-[#bbb] leading-relaxed px-1">
             Uses real (inflation-adjusted) returns based on the Trinity Study 4% rule framework.
