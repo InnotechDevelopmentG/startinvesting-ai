@@ -10,6 +10,7 @@ export default async function AdminPage() {
 
   const [
     { data: submissions },
+    { data: earlyCaptures },
     { data: subscribers },
     { data: opportunities },
     { data: addressed },
@@ -17,9 +18,17 @@ export default async function AdminPage() {
     { data: twitterAddressed },
     { data: quoraOpps },
   ] = await Promise.all([
+    // Full simulator completions (contribution_amount is set)
     supabase
       .from('simulator_submissions')
       .select('*')
+      .not('contribution_amount', 'is', null)
+      .order('created_at', { ascending: false }),
+    // Early-capture signups — FIRE/mortgage modal (contribution_amount is null)
+    supabase
+      .from('simulator_submissions')
+      .select('id, email, age, created_at')
+      .is('contribution_amount', null)
       .order('created_at', { ascending: false }),
     supabase
       .from('newsletter_subscribers')
@@ -53,6 +62,7 @@ export default async function AdminPage() {
   return (
     <AdminDashboard
       submissions={submissions || []}
+      earlyCaptures={earlyCaptures || []}
       subscribers={subscribers || []}
       opportunities={opportunities || []}
       addressed={addressed || []}

@@ -90,8 +90,16 @@ const SUBMISSION_COLUMNS: { key: SortKey; label: string }[] = [
   { key: 'years',               label: 'Years' },
 ];
 
+interface EarlyCapture {
+  id: string;
+  email: string;
+  age: number | null;
+  created_at: string;
+}
+
 export default function AdminDashboard({
   submissions,
+  earlyCaptures,
   subscribers,
   opportunities,
   addressed,
@@ -100,6 +108,7 @@ export default function AdminDashboard({
   quoraOpps,
 }: {
   submissions: Submission[];
+  earlyCaptures: EarlyCapture[];
   subscribers: Subscriber[];
   opportunities: Opportunity[];
   addressed: Opportunity[];
@@ -149,6 +158,18 @@ export default function AdminDashboard({
   const subWeek = subscribers.filter(s => new Date(s.created_at) >= weekAgo).length;
   const subToday = subscribers.filter(s => new Date(s.created_at).toDateString() === todayStr).length;
 
+  // Email source sets for source detection in subscribers tab
+  const simulatorEmails = new Set(submissions.map(s => s.email));
+  const earlyEmails = new Set(earlyCaptures.map(s => s.email));
+
+  // Total unique emails across all sources
+  const allEmails = new Set([
+    ...subscribers.map(s => s.email),
+    ...submissions.map(s => s.email),
+    ...earlyCaptures.map(s => s.email),
+  ]);
+  const totalUniqueEmails = allEmails.size;
+
   const riskCounts = {
     conservative: submissions.filter(s => s.risk_profile === 'conservative').length,
     moderate:     submissions.filter(s => s.risk_profile === 'moderate').length,
@@ -168,11 +189,32 @@ export default function AdminDashboard({
     return list;
   }, [submissions, search, sortKey, sortDir]);
 
-  // ── Subscribers table ────────────────────────────────────────────────────
+  // ── Subscribers table — merge all email sources, deduplicate by email ───
   const subRows = useMemo(() => {
     const q = subSearch.toLowerCase();
-    return q ? subscribers.filter(s => s.email.toLowerCase().includes(q)) : subscribers;
-  }, [subscribers, subSearch]);
+    // Build a unified list: newsletter subs + early captures not already in newsletter
+    const newsletterEmails = new Set(subscribers.map(s => s.email));
+    const earlyOnlyCaptures = earlyCaptures.filter(e => !newsletterEmails.has(e.email));
+
+    type SubRow = { id: string; email: string; created_at: string; source: 'simulator' | 'fire-mortgage' | 'newsletter' };
+    const all: SubRow[] = [
+      ...subscribers.map(s => ({
+        id: s.id,
+        email: s.email,
+        created_at: s.created_at,
+        source: (simulatorEmails.has(s.email) ? 'simulator' : earlyEmails.has(s.email) ? 'fire-mortgage' : 'newsletter') as SubRow['source'],
+      })),
+      ...earlyOnlyCaptures.map(e => ({
+        id: e.id,
+        email: e.email,
+        created_at: e.created_at,
+        source: 'fire-mortgage' as SubRow['source'],
+      })),
+    ];
+
+    all.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return q ? all.filter(s => s.email.toLowerCase().includes(q)) : all;
+  }, [subscribers, earlyCaptures, subSearch, simulatorEmails, earlyEmails]);
 
   // ── Reddit opportunities ─────────────────────────────────────────────────
   const visibleOpps = useMemo(
@@ -397,10 +439,10 @@ export default function AdminDashboard({
         {/* Top stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           {[
-            { label: 'Simulator leads',  value: submissions.length },
-            { label: 'Newsletter subs',  value: subscribers.length },
-            { label: 'Leads this week',  value: statsWeek },
-            { label: 'Subs this week',   value: subWeek },
+            { label: 'Total unique emails', value: totalUniqueEmails },
+            { label: 'Newsletter subs',     value: subscribers.length },
+            { label: 'Simulator leads',     value: submissions.length },
+            { label: 'FIRE / mortgage captures', value: earlyCaptures.length },
           ].map(({ label, value }) => (
             <div key={label} className="bg-white rounded-xl border border-[#f3f4f6] px-5 py-4">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-[#aaa] mb-1">{label}</p>
@@ -410,25 +452,40 @@ export default function AdminDashboard({
         </div>
 
         {/* Secondary stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
           <div className="bg-white rounded-xl border border-[#f3f4f6] px-5 py-4">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#aaa] mb-1">Avg projected value</p>
             <p className="text-[26px] font-medium text-[#00C896] leading-none tracking-tight font-tabular">{fmt(avgProjected)}</p>
           </div>
           <div className="bg-white rounded-xl border border-[#f3f4f6] px-5 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#aaa] mb-1">Leads today</p>
-            <p className="text-[26px] font-medium text-[#111] leading-none tracking-tight">{statsToday}</p>
-            <p className="text-[11px] text-[#bbb] mt-1">{statsMonth} this month</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#aaa] mb-1">New today</p>
+            <p className="text-[26px] font-medium text-[#111] leading-none tracking-tight">{statsToday + subToday}</p>
+            <p className="text-[11px] text-[#bbb] mt-1">{statsMonth} simulator this month</p>
+          </div>
+          <div className="bg-white rounded-xl border border-[#f3f4f6] px-5 py-4">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#aaa] mb-2">Email sources</p>
+            <div className="flex flex-col gap-1.5">
+              {[
+                { label: 'Newsletter', count: subscribers.filter(s => !simulatorEmails.has(s.email) && !earlyEmails.has(s.email)).length, color: '#888', bg: '#f3f4f6' },
+                { label: 'Simulator', count: submissions.length, color: '#00C896', bg: '#E6FAF5' },
+                { label: 'FIRE/Mortgage', count: earlyCaptures.filter(e => !simulatorEmails.has(e.email)).length, color: '#f97316', bg: '#fff7ed' },
+              ].map(({ label, count, color, bg }) => (
+                <div key={label} className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium px-2 py-0.5 rounded-full" style={{ background: bg, color }}>{label}</span>
+                  <span className="text-[13px] font-medium text-[#111]">{count}</span>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="bg-white rounded-xl border border-[#f3f4f6] px-5 py-4">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#aaa] mb-3">Risk profile breakdown</p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3">
               {(['conservative', 'moderate', 'growth'] as const).map((r) => {
                 const s = RISK_STYLE[r];
                 return (
                   <div key={r} className="flex items-center gap-2">
-                    <span className="text-[12px] font-medium px-2.5 py-1 rounded-full" style={{ background: s.bg, color: s.text }}>{s.label}</span>
-                    <span className="text-[16px] font-medium text-[#111]">{riskCounts[r]}</span>
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.text }}>{s.label}</span>
+                    <span className="text-[14px] font-medium text-[#111]">{riskCounts[r]}</span>
                   </div>
                 );
               })}
@@ -444,7 +501,7 @@ export default function AdminDashboard({
             <div className="flex items-center gap-1">
               {([
                 { key: 'leads',       label: 'Simulator leads',        count: submissions.length },
-                { key: 'subscribers', label: 'Newsletter subscribers',  count: subscribers.length },
+                { key: 'subscribers', label: 'All subscribers',  count: subRows.length },
                 { key: 'reddit',      label: 'Reddit opportunities',    count: visibleOpps.length },
                 { key: 'twitter',     label: 'X/Twitter opportunities', count: visibleTwOpps.length },
                 { key: 'quora',       label: 'Quora opportunities',     count: visibleQuoraOpps.length },
@@ -573,7 +630,7 @@ export default function AdminDashboard({
             </div>
           )}
 
-          {/* ── Newsletter subscribers ── */}
+          {/* ── All email subscribers ── */}
           {tab === 'subscribers' && (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -582,25 +639,31 @@ export default function AdminDashboard({
                     <th className="text-left px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-[#aaa] whitespace-nowrap">Date</th>
                     <th className="text-left px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-[#aaa]">Email</th>
                     <th className="text-left px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-[#aaa]">Source</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-[#aaa]">Gets emails</th>
                   </tr>
                 </thead>
                 <tbody>
                   {subRows.length === 0 ? (
-                    <tr><td colSpan={3} className="px-5 py-16 text-center text-[14px] text-[#ccc]">
+                    <tr><td colSpan={4} className="px-5 py-16 text-center text-[14px] text-[#ccc]">
                       {subSearch ? `No results matching "${subSearch}"` : 'No subscribers yet.'}
                     </td></tr>
                   ) : subRows.map((s) => {
-                    const isSimulator = submissions.some(sub => sub.email === s.email);
+                    const sourceStyle = {
+                      simulator:     { bg: '#E6FAF5', color: '#00C896', label: 'Simulator' },
+                      'fire-mortgage': { bg: '#fff7ed', color: '#f97316', label: 'FIRE / Mortgage' },
+                      newsletter:    { bg: '#f3f4f6', color: '#888',    label: 'Newsletter' },
+                    }[s.source];
                     return (
                       <tr key={s.id} className="border-b border-[#f9f9f9] hover:bg-[#fafafa] transition-colors">
                         <td className="px-5 py-3.5 text-[12px] text-[#888] whitespace-nowrap">{fmtDate(s.created_at)}</td>
                         <td className="px-5 py-3.5 text-[13px] font-medium text-[#111]">{s.email}</td>
                         <td className="px-5 py-3.5">
                           <span className="text-[11px] font-medium px-2.5 py-1 rounded-full whitespace-nowrap"
-                            style={isSimulator ? { background: '#E6FAF5', color: '#00C896' } : { background: '#f3f4f6', color: '#888' }}>
-                            {isSimulator ? 'Simulator' : 'Newsletter'}
+                            style={{ background: sourceStyle.bg, color: sourceStyle.color }}>
+                            {sourceStyle.label}
                           </span>
                         </td>
+                        <td className="px-5 py-3.5 text-[12px] text-[#888]">Pre/post market · Weekly</td>
                       </tr>
                     );
                   })}
@@ -608,7 +671,9 @@ export default function AdminDashboard({
               </table>
               <div className="px-5 py-3 border-t border-[#f3f4f6]">
                 <p className="text-[12px] text-[#bbb]">
-                  {subSearch ? `Showing ${subRows.length} of ${subscribers.length} matching "${subSearch}"` : `${subscribers.length} subscriber${subscribers.length !== 1 ? 's' : ''} total · ${subToday} joined today`}
+                  {subSearch
+                    ? `Showing ${subRows.length} matching "${subSearch}"`
+                    : `${subRows.length} total · ${subToday} joined today · all receive pre/post market + weekly emails`}
                 </p>
               </div>
             </div>
