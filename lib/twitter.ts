@@ -135,12 +135,24 @@ export function scorePost(post: TwitterPost, position = 10, fresh = false): numb
   // Bonus for coming from a fresh (qdr:d) query — already a recency signal
   if (fresh) score += 3;
 
-  // ── Penalise low-opportunity content ────────────────────────────────────
-  if (/\b(announces?|reports?|says|warns?|breaks?|exclusive)\b/i.test(post.title)) score -= 5;
-  if (/\b(sponsored|ad|promo)\b/i.test(text)) score -= 8;
+  // ── Hard disqualifiers — return very low score so they're never stored ───
+  // Political content
+  if (/\b(governor|senator|congressman|president|democrat|republican|GOP|Biden|Trump|Harris|politician|election|ballot|policy|legislation|bill passed|signed into law)\b/i.test(text)) score -= 30;
+  // News/media commentary
+  if (/\b(announces?|reports?|breaking|exclusive|warns?|says|drops|rises|falls|crash|scandal|disaster|malefactor|maloderous)\b/i.test(post.title)) score -= 20;
+  // Must contain at least one personal finance signal — if none, kill it
+  const hasFinanceSignal = /invest|retire|mortgage|savings|compound|index fund|FIRE|financial independence|S&P|401k|IRA|down payment|net worth|income/i.test(text);
+  if (!hasFinanceSignal) score -= 25;
+  // Spam/promotional patterns
+  if (/\b(sponsored|ad\b|promo|click here|sign up|buy now|discount|coupon|giveaway|win|prize)\b/i.test(text)) score -= 20;
+  // News outlets / bots — handles ending in "news", "media", "official", "bot"
+  if (/news|media|official|_bot\b/i.test(post.handle)) score -= 15;
 
   return score;
 }
+
+// Minimum score a post must reach to be worth storing
+export const MIN_SCORE_THRESHOLD = 5;
 
 async function serperSearch(
   query: string,
@@ -233,6 +245,7 @@ export async function getAllTwitterOpportunities(): Promise<TwitterPost[]> {
   }
 
   return scored
+    .filter(({ score }) => score >= MIN_SCORE_THRESHOLD)
     .sort((a, b) => b.score - a.score)
     .map(({ post }) => post);
 }

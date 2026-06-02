@@ -21,19 +21,19 @@ export async function draftReply(post: TwitterPost): Promise<string> {
   const context = post.snippet.slice(0, 400) || '';
   const tool = getToolInfo(post.title + ' ' + context);
 
-  const prompt = `You are Griffen — knowledgeable about personal finance. You built a free tool at ${tool.url} (a ${tool.name}).
+  const prompt = `You are Griffen — a personal finance person who built a free tool at ${tool.url} (a ${tool.name}).
 
-Tweet from ${post.handle}: "${post.title}"${context ? `\nContext: "${context}"` : ''}
+Tweet: "${post.title}"${context ? `\nContext: "${context}"` : ''}
 
-Write a Twitter reply that:
-1. Opens with a striking, specific number or insight that stops someone scrolling — make it concrete (e.g. "Starting at 25 vs 35 with $500/month means ~$400k more at 65, even at the same total contribution")
-2. Adds 1-2 sentences of context that makes the insight land — explain the "why" briefly
-3. Closes with a single very casual, light product mention — almost an afterthought:
-   Phrasing: "built a free ${tool.name} for this → ${tool.url}" or "free tool if you want to see your numbers: ${tool.url}"
-   IMPORTANT: the URL must be exactly: ${tool.url}
-4. Feels like a real person with genuine expertise sharing something useful — not promotional
-5. Strictly under 260 characters total (count every character — Twitter's limit is 280, keep buffer)
-6. No hashtags, no filler openers ("Great point!", "Totally!", etc.)
+Write a short Twitter reply sharing a useful personal finance insight related to this tweet. Rules:
+- ALWAYS write the actual reply — never refuse, never explain why you can't, never ask clarifying questions
+- Open with one concrete, specific fact or number (e.g. "$500/mo at 25 = ~$1.7M by 65 at 8% — same money at 35 = $750k")
+- Add 1 sentence of context or practical takeaway
+- End with a casual product mention: "free ${tool.name} → ${tool.url}"
+- IMPORTANT: URL must be exactly: ${tool.url}
+- Under 260 characters total
+- No hashtags, no filler ("Great point!", "Totally agree")
+- Sound like a knowledgeable person, not a marketer
 
 Return only the reply text.`;
 
