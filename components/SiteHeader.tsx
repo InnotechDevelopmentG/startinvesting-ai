@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { label: 'Investment Simulator', href: '/' },
   { label: 'Mortgage Calculator', href: '/mortgage' },
   { label: 'FIRE Calculator', href: '/fire' },
+  { label: 'Learn', href: '/learn' },
   { label: 'News', href: '/news' },
   { label: 'About', href: '/about' },
 ];
@@ -37,7 +38,7 @@ export default function SiteHeader() {
                 key={href}
                 href={href}
                 className={`px-4 py-2 rounded-lg text-[14px] font-medium transition-colors
-                  ${pathname === href
+                  ${pathname === href || (href !== '/' && pathname.startsWith(href))
                     ? 'text-[#111] bg-[#f3f4f6]'
                     : 'text-[#888] hover:text-[#111] hover:bg-[#f9f9f9]'
                   }`}
@@ -96,7 +97,7 @@ export default function SiteHeader() {
                   href={href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`px-4 py-3 rounded-xl text-[15px] font-medium transition-colors
-                    ${pathname === href ? 'text-[#111] bg-[#f3f4f6]' : 'text-[#555] hover:bg-[#f9f9f9]'}`}
+                    ${pathname === href || (href !== '/' && pathname.startsWith(href)) ? 'text-[#111] bg-[#f3f4f6]' : 'text-[#555] hover:bg-[#f9f9f9]'}`}
                 >
                   {label}
                 </Link>
